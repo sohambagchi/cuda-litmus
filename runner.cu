@@ -1,5 +1,7 @@
 #include <iostream>
+#include <set>
 #include <chrono>
+#include <iomanip>
 #include <unistd.h>
 #include <cuda_runtime.h>
 #include <atomic>
@@ -54,7 +56,7 @@ typedef struct {
 
 
 __global__ void check_results (
-    uint* test_locations,
+    cuda::atomic<uint>* test_locations,
     uint* read_results,
     TestResults* test_results,
     uint* stress_params) {
@@ -77,6 +79,16 @@ __global__ void check_results (
     } else if ((r0 == 1 && r1 == 0)) {
 	test_results->weak.fetch_add(1);
     }
+}
+
+int host_check_results(TestResults* results, bool print) {
+  if (print) {
+    std::cout << "r0=0, r1=0 (seq): " << results->seq0 << "\n";
+    std::cout << "r0=1, r1=1 (seq): " << results->seq1 << "\n";
+    std::cout << "r0=0, r1=1 (interleaved): " << results->interleaved << "\n";
+    std::cout << "r0=1, r1=0 (weak): " << results->weak << "\n";
+  }
+  return results->weak;
 }
 
 __global__ void litmus_test(
@@ -180,103 +192,201 @@ int parseStressParamsFile(const char *filename, StressParams *config) {
     return 0;
 }
 
+/** Returns a value between the min and max (inclusive). */
+int setBetween(int min, int max) {
+  if (min == max) {
+    return min;
+  } else {
+    int size = rand() % (max - min + 1);
+    return min + size;
+  }
+}
+
+bool percentageCheck(int percentage) {
+  return rand() % 100 < percentage;
+}
+
+/** Assigns shuffled workgroup ids, using the shufflePct to determine whether the ids should be shuffled this iteration. */
+void setShuffledWorkgroups(uint* h_shuffledWorkgroups, int numWorkgroups, int shufflePct) {
+  for (int i = 0; i < numWorkgroups; i++) {
+    h_shuffledWorkgroups[i] = i; 
+  }
+  if (percentageCheck(shufflePct)) {
+    for (int i = numWorkgroups - 1; i > 0; i--) {
+      int swap = rand() % (i + 1);
+      int temp = h_shuffledWorkgroups[i];
+      h_shuffledWorkgroups[i] = h_shuffledWorkgroups[swap];
+      h_shuffledWorkgroups[swap] = temp;
+    }
+  }
+}
+
+/** Sets the stress regions and the location in each region to be stressed. Uses the stress assignment strategy to assign
+  * workgroups to specific stress locations. Assignment strategy 0 corresponds to a "round-robin" assignment where consecutive
+  * threads access separate scratch locations, while assignment strategy 1 corresponds to a "chunking" assignment where a group
+  * of consecutive threads access the same location.
+  */
+void setScratchLocations(uint* h_locations, int numWorkgroups, StressParams params) {
+  std::set<int> usedRegions;
+  int numRegions = params.scratchMemorySize / params.stressLineSize;
+  for (int i = 0; i < params.stressTargetLines; i++) {
+    int region = rand() % numRegions;
+    while(usedRegions.count(region))
+      region = rand() % numRegions;
+    int locInRegion = rand() % params.stressLineSize;
+    switch (params.stressAssignmentStrategy) {
+      case 0:
+        for (int j = i; j < numWorkgroups; j += params.stressTargetLines) {
+	  h_locations[j] = (region * params.stressLineSize) + locInRegion;
+        }
+        break;
+      case 1:
+        int workgroupsPerLocation = numWorkgroups/params.stressTargetLines;
+        for (int j = 0; j < workgroupsPerLocation; j++) {
+	  h_locations[i*workgroupsPerLocation + j] = (region * params.stressLineSize) + locInRegion;
+        }
+        if (i == params.stressTargetLines - 1 && numWorkgroups % params.stressTargetLines != 0) {
+          for (int j = 0; j < numWorkgroups % params.stressTargetLines; j++) {
+	    h_locations[numWorkgroups - j - 1] = (region * params.stressLineSize) + locInRegion;
+          }
+        }
+        break;
+    }
+  }
+}
+
+/** These parameters vary per iteration, based on a given percentage. */
+void setDynamicStressParams(uint* h_stressParams, StressParams params) {
+  if (percentageCheck(params.barrierPct)) {
+    h_stressParams[0] = 1;
+  } else {
+    h_stressParams[0] = 0;
+  }
+  if (percentageCheck(params.memStressPct)) {
+    h_stressParams[1] = 1;
+  } else {
+    h_stressParams[1] = 0;
+  }
+  if (percentageCheck(params.preStressPct)) {
+    h_stressParams[4] = 1;
+  } else {
+    h_stressParams[4] = 0;
+  }
+}
+
+/** These parameters are static for all iterations of the test. Aliased memory is used for coherence tests. */
+void setStaticStressParams(uint* h_stressParams, StressParams stressParams, TestParams testParams) {
+  h_stressParams[2] = stressParams.memStressIterations;
+  h_stressParams[3] = stressParams.memStressPattern;
+  h_stressParams[5] = stressParams.preStressIterations;
+  h_stressParams[6] = stressParams.preStressPattern;
+  h_stressParams[7] = stressParams.permuteThread;
+  h_stressParams[8] = testParams.permuteLocation;
+  h_stressParams[9] = stressParams.testingWorkgroups;
+  h_stressParams[10] = stressParams.memStride;
+
+  if (testParams.aliasedMemory == 1) {
+    h_stressParams[11] = 0;
+  } else {
+    h_stressParams[11] = stressParams.memStride;
+  }
+}
+
 void run(StressParams stressParams, TestParams testParams, bool print_results) {
     int testingThreads = stressParams.workgroupSize * stressParams.testingWorkgroups;
-    int testLocSize = testingThreads * testParams.numMemLocations * stressParams.memStride;
 
-    uint *testLocations;
-    cudaMalloc(&testLocations, testLocSize * sizeof(uint));
+    int testLocSize = testingThreads * testParams.numMemLocations * stressParams.memStride * sizeof(uint);
+    cuda::atomic<uint> *testLocations;
+    cudaMalloc(&testLocations, testLocSize);
 
+    int readResultsSize = testParams.numOutputs * testingThreads * sizeof(uint);
     uint *readResults;
-    cudaMalloc(&readResults, testParams.numOutputs * testingThreads * sizeof(uint));
+    cudaMalloc(&readResults, readResultsSize);
 
-    uint *h_testResults = (uint *)malloc(testParams.numResults * sizeof(uint));
-    uint *d_testResults;
-    cudaMalloc(&d_testResults, testParams.numResults * sizeof(uint));
+    TestResults *h_testResults = (TestResults *)malloc(sizeof(TestResults));
+    TestResults *d_testResults;
+    cudaMalloc(&d_testResults, sizeof(TestResults));
 
-    uint *h_shuffledWorkgroups = (uint *)malloc(stressParams.maxWorkgroups * sizeof(uint));
+    int shuffledWorkgroupsSize = stressParams.maxWorkgroups * sizeof(uint);
+    uint *h_shuffledWorkgroups = (uint *)malloc(shuffledWorkgroupsSize);
     uint *d_shuffledWorkgroups;
-    cudaMalloc(&d_shuffledWorkgroups, stressParams.maxWorkgroups * sizeof(uint));
+    cudaMalloc(&d_shuffledWorkgroups, shuffledWorkgroupsSize);
 
-    uint *barrier;
-    cudaMalloc(&barrier, 1 * sizeof(uint));
+    int barrierSize = sizeof(uint);
+    cuda::atomic<uint> *barrier;
+    cudaMalloc(&barrier, barrierSize);
 
+    int scratchpadSize = stressParams.scratchMemorySize * sizeof(uint);
     uint *scratchpad;
-    cudaMalloc(&scratchpad, stressParams.scratchMemorySize * sizeof(uint));
+    cudaMalloc(&scratchpad, scratchpadSize);
 
-    uint *h_scratchLocations = (uint *)malloc(stressParams.maxWorkgroups * sizeof(uint));
+    int scratchLocationsSize = stressParams.maxWorkgroups * sizeof(uint);
+    uint *h_scratchLocations = (uint *)malloc(scratchLocationsSize);
     uint *d_scratchLocations;
-    cudaMalloc(&d_shuffledWorkgroups, stressParams.maxWorkgroups * sizeof(uint));
+    cudaMalloc(&d_scratchLocations, scratchLocationsSize);
 
-    uint *h_stressParams = (uint *)malloc(12 * sizeof(uint));
+    int stressParamsSize = 12 * sizeof(uint);
+    uint *h_stressParams = (uint *)malloc(stressParamsSize);
     uint *d_stressParams;
-    cudaMalloc(&d_stressParams, 12 * sizeof(uint));
+    cudaMalloc(&d_stressParams, stressParamsSize);
+    setStaticStressParams(h_stressParams, stressParams, testParams);
 
     // run iterations
     std::chrono::time_point<std::chrono::system_clock> start, end;
     start = std::chrono::system_clock::now();
     int weakBehaviors = 0;
-    int totalBehaviors = 0;
 
-    float testTime = 0;
+    for (int i = 0; i < stressParams.testIterations; i++) {
+        int numWorkgroups = setBetween(stressParams.testingWorkgroups, stressParams.maxWorkgroups);
 
+	// clear memory
+	cudaMemset(testLocations, 0, testLocSize);
+	cudaMemset(d_testResults, 0, sizeof(TestResults));
+	cudaMemset(readResults, 0, readResultsSize);
+	cudaMemset(barrier, 0, barrierSize);
+	cudaMemset(scratchpad, 0, scratchpadSize);
+	setShuffledWorkgroups(h_shuffledWorkgroups, numWorkgroups, stressParams.shufflePct);
+	cudaMemcpy(d_shuffledWorkgroups, h_shuffledWorkgroups, shuffledWorkgroupsSize, cudaMemcpyHostToDevice);
+	setScratchLocations(h_scratchLocations, numWorkgroups, stressParams);
+	cudaMemcpy(d_scratchLocations, h_scratchLocations, scratchLocationsSize, cudaMemcpyHostToDevice);
+	setDynamicStressParams(h_stressParams, stressParams);
+	cudaMemcpy(d_stressParams, h_stressParams, stressParamsSize, cudaMemcpyHostToDevice);
 
+        litmus_test<<<numWorkgroups, stressParams.workgroupSize>>>(testLocations, readResults, d_shuffledWorkgroups, barrier, scratchpad, d_scratchLocations, d_stressParams);
 
-    int N = 100000; // Number of elements in each vector
-    size_t size = N * sizeof(float);
+	check_results<<<stressParams.testingWorkgroups, stressParams.workgroupSize>>>(testLocations, readResults, d_testResults, d_stressParams);
 
-    // Allocate host memory
-    float *h_A = (float *)malloc(size);
-    float *h_B = (float *)malloc(size);
-    float *h_C = (float *)malloc(size);
+	cudaMemcpy(h_testResults, d_testResults, sizeof(TestResults), cudaMemcpyDeviceToHost);
 
-    // Initialize vectors on the host
-    for (int i = 0; i < N; i++) {
-        h_A[i] = i * 1.0f;
-        h_B[i] = i * 2.0f;
-    }
-
-    // Allocate device memory
-    float *d_A, *d_B, *d_C;
-    cudaMalloc(&d_A, size);
-    cudaMalloc(&d_B, size);
-    cudaMalloc(&d_C, size);
-
-    // Copy vectors from host memory to device memory
-    cudaMemcpy(d_A, h_A, size, cudaMemcpyHostToDevice);
-    cudaMemcpy(d_B, h_B, size, cudaMemcpyHostToDevice);
-
-    // Number of threads per block
-    int threadsPerBlock = 256;
-
-    // Number of blocks in grid
-    int blocksPerGrid = (N + threadsPerBlock - 1) / threadsPerBlock;
-
-    // Launch the vectorAdd CUDA kernel
-    vectorAdd<<<blocksPerGrid, threadsPerBlock>>>(d_A, d_B, d_C, N);
-
-    // Copy the result vector from device memory to host memory
-    cudaMemcpy(h_C, d_C, size, cudaMemcpyDeviceToHost);
-
-    // Verify the result
-    for (int i = 0; i < N; i++) {
-        if (fabs(h_A[i] + h_B[i] - h_C[i]) > 1e-5) {
-            std::cerr << "Result verification failed at element " << i << "!" << std::endl;
-            exit(EXIT_FAILURE);
+	if (print_results) {
+          std::cout << "Iteration " << i << "\n";
         }
+        weakBehaviors += host_check_results(h_testResults, print_results);
     }
+    
+    end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<float> duration = end - start;
+    std::cout << "Time taken: " << duration.count() << " seconds" << std::endl;
+    std::cout << std::fixed << std::setprecision(0) << "Weak behavior rate: " << float(weakBehaviors)/duration.count() << " per second\n";
 
-    std::cout << "Test PASSED" << std::endl;
+    int totalBehaviors = stressParams.testingWorkgroups * stressParams.workgroupSize * stressParams.testIterations;
 
-    // Free device memory
-    cudaFree(d_A);
-    cudaFree(d_B);
-    cudaFree(d_C);
+    std::cout << "Weak behavior percentage: " << float(weakBehaviors)/float(totalBehaviors) * 100 << "%\n";
+    std::cout << "Number of weak behaviors: " << weakBehaviors << "\n";
 
-    // Free host memory
-    free(h_A);
-    free(h_B);
-    free(h_C);
+    // Free memory
+    cudaFree(testLocations);
+    cudaFree(readResults);
+    cudaFree(d_testResults);
+    free(h_testResults);
+    cudaFree(d_shuffledWorkgroups);
+    free(h_shuffledWorkgroups);
+    cudaFree(barrier);
+    cudaFree(scratchpad);
+    cudaFree(d_scratchLocations);
+    free(h_scratchLocations);
+    cudaFree(d_stressParams);
+    free(h_stressParams);
 }
 
 int main(int argc, char *argv[]) {
