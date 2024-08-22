@@ -30,7 +30,6 @@ __global__ void litmus_test(
         uint x_1 = (id_1_final) * stress_params[10] * 2;
         uint y_1 = (permute_id(id_1_final, stress_params[8], total_ids)) * stress_params[10] * 2 + stress_params[11];
 
-
         if (stress_params[4]) {
             do_stress(scratchpad, scratch_locations, stress_params[5], stress_params[6]);
         }
