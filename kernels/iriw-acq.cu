@@ -3,38 +3,38 @@
 #include "functions.cuh"
 
 __global__ void litmus_test(
-    cuda::atomic<uint, cuda::thread_scope_device>* test_locations,
+    d_atomic_uint* test_locations,
     uint* read_results,
     uint* shuffled_workgroups,
     cuda::atomic<uint, cuda::thread_scope_device>* barrier,
     uint* scratchpad,
     uint* scratch_locations,
-    uint* stress_params) {
+    KernelParams* kernel_params) {
     uint shuffled_workgroup = shuffled_workgroups[blockIdx.x];
-    if (shuffled_workgroup < stress_params[9]) {
-        uint total_ids = (blockDim.x * stress_params[9])/2;
+    if (shuffled_workgroup < kernel_params->testing_workgroups) {
+        uint total_ids = (blockDim.x * kernel_params->testing_workgroups)/2;
         uint id_0 = shuffled_workgroup * blockDim.x + threadIdx.x;
 	uint id_0_final = id_0 % total_ids;
         bool id_0_first_half = id_0 / total_ids == 0;
-        uint new_workgroup = stripe_workgroup(shuffled_workgroup, threadIdx.x, stress_params[9]);
-        uint id_1 = new_workgroup * blockDim.x + permute_id(threadIdx.x, stress_params[7], blockDim.x);
+        uint new_workgroup = stripe_workgroup(shuffled_workgroup, threadIdx.x, kernel_params->testing_workgroups);
+        uint id_1 = new_workgroup * blockDim.x + permute_id(threadIdx.x, kernel_params->permute_thread, blockDim.x);
 	uint id_1_final = id_1 % total_ids;
         bool id_1_first_half = id_1 / total_ids == 0;
 
 	uint mem_0;
         if (id_0_first_half) {
-            mem_0 = id_0_final * stress_params[10] * 2;
+            mem_0 = id_0_final * kernel_params->mem_stride * 2;
         } else {
-            mem_0 = permute_id(id_0_final, stress_params[8], total_ids) * stress_params[10] * 2 + stress_params[11];
+            mem_0 = permute_id(id_0_final, kernel_params->permute_location, total_ids) * kernel_params->mem_stride * 2 + kernel_params->mem_offset;
         }
-        uint x_1 = (id_1_final) * stress_params[10] * 2;
-        uint y_1 = (permute_id(id_1_final, stress_params[8], total_ids)) * stress_params[10] * 2 + stress_params[11];
+        uint x_1 = (id_1_final) * kernel_params->mem_stride * 2;
+        uint y_1 = (permute_id(id_1_final, kernel_params->permute_location, total_ids)) * kernel_params->mem_stride * 2 + kernel_params->mem_offset;
 
-        if (stress_params[4]) {
-            do_stress(scratchpad, scratch_locations, stress_params[5], stress_params[6]);
+        if (kernel_params->pre_stress) {
+            do_stress(scratchpad, scratch_locations, kernel_params->pre_stress_iterations, kernel_params->pre_stress_pattern);
         }
-        if (stress_params[0]) {
-            spin(barrier, blockDim.x * stress_params[9]);
+        if (kernel_params->barrier) {
+            spin(barrier, blockDim.x * kernel_params->testing_workgroups);
         }
 
 	test_locations[mem_0].store(1, cuda::memory_order_relaxed); // write to either x or y depending on thread
@@ -54,19 +54,19 @@ __global__ void litmus_test(
 	        read_results[id_1_final * 4 + 3] = r3;
             }
         }
-    } else if (stress_params[1]) {
-        do_stress(scratchpad, scratch_locations, stress_params[2], stress_params[3]);
+    } else if (kernel_params->mem_stress) {
+        do_stress(scratchpad, scratch_locations, kernel_params->mem_stress_iterations, kernel_params->mem_stress_pattern);
     }
 }
 
 __global__ void check_results (
-    cuda::atomic<uint, cuda::thread_scope_device>* test_locations,
+    d_atomic_uint* test_locations,
     uint* read_results,
     TestResults* test_results,
-    uint* stress_params) {
+    KernelParams* kernel_params) {
     uint id_0 = blockIdx.x * blockDim.x + threadIdx.x;
-    if (id_0 < (blockDim.x * stress_params[9])/2) {
-        uint x_0 = id_0 * stress_params[10] * 2;
+    if (id_0 < (blockDim.x * kernel_params->testing_workgroups)/2) {
+        uint x_0 = id_0 * kernel_params->mem_stride * 2;
 	uint mem_x_0 = test_locations[x_0];
         uint r0 = read_results[id_0 * 4];
         uint r1 = read_results[id_0 * 4 + 1];
@@ -101,7 +101,6 @@ __global__ void check_results (
 
 int host_check_results(TestResults* results, bool print) {
     if (print) {
-
         std::cout << "r0=0, r1=0, r2=0, r3=0 (seq): " << results->seq0 << "\n";
         std::cout << "r0=1, r1=1, r2=1, r3=1 (seq): " << results->seq1 << "\n";
 	std::cout << "r0=0, r1=0, r2=1, r3=1 (seq): " << results->seq2 << "\n";

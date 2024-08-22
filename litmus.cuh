@@ -6,6 +6,15 @@
 #include <cuda_runtime.h>
 #include <cuda/atomic>
 
+#ifdef SCOPE_DEVICE
+typedef cuda::atomic<uint, cuda::thread_scope_device> d_atomic_uint;
+#elif defined(SCOPE_BLOCK)
+typedef cuda::atomic<uint, cuda::thread_scope_block> d_atomic_uint;
+#else
+typedef cuda::atomic<uint> d_atomic_uint;
+#endif
+
+
 typedef struct {
     cuda::atomic<uint, cuda::thread_scope_device> seq0;
     cuda::atomic<uint, cuda::thread_scope_device>  seq1;
@@ -20,20 +29,35 @@ typedef struct {
     cuda::atomic<uint, cuda::thread_scope_device> other;
 } TestResults;
 
+typedef struct {
+    bool barrier;
+    bool mem_stress;
+    int mem_stress_iterations;
+    int mem_stress_pattern;
+    bool pre_stress;
+    int pre_stress_iterations;
+    int pre_stress_pattern;
+    int permute_thread;
+    int permute_location;
+    int testing_workgroups;
+    int mem_stride;
+    int mem_offset;
+} KernelParams;
+
 __global__ void litmus_test(
-    cuda::atomic<uint, cuda::thread_scope_device>* test_locations,
+    d_atomic_uint* test_locations,
     uint* read_results,
     uint* shuffled_workgroups,
     cuda::atomic<uint, cuda::thread_scope_device>* barrier,
     uint* scratchpad,
     uint* scratch_locations,
-    uint* stress_params);
+    KernelParams* kernel_params);
 
 __global__ void check_results (
-    cuda::atomic<uint, cuda::thread_scope_device>* test_locations,
+    d_atomic_uint* test_locations,
     uint* read_results,
     TestResults* test_results,
-    uint* stress_params);
+    KernelParams* kernel_params);
 
 int host_check_results(TestResults* results, bool print);
 

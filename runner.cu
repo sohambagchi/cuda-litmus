@@ -167,39 +167,27 @@ void setScratchLocations(uint* h_locations, int numWorkgroups, StressParams para
 }
 
 /** These parameters vary per iteration, based on a given percentage. */
-void setDynamicStressParams(uint* h_stressParams, StressParams params) {
-  if (percentageCheck(params.barrierPct)) {
-    h_stressParams[0] = 1;
-  } else {
-    h_stressParams[0] = 0;
-  }
-  if (percentageCheck(params.memStressPct)) {
-    h_stressParams[1] = 1;
-  } else {
-    h_stressParams[1] = 0;
-  }
-  if (percentageCheck(params.preStressPct)) {
-    h_stressParams[4] = 1;
-  } else {
-    h_stressParams[4] = 0;
-  }
+void setDynamicKernelParams(KernelParams* h_kernelParams, StressParams params) {
+  h_kernelParams->barrier = percentageCheck(params.barrierPct);
+  h_kernelParams->mem_stress = percentageCheck(params.memStressPct);
+  h_kernelParams->pre_stress = percentageCheck(params.preStressPct);
 }
 
 /** These parameters are static for all iterations of the test. Aliased memory is used for coherence tests. */
-void setStaticStressParams(uint* h_stressParams, StressParams stressParams, TestParams testParams) {
-  h_stressParams[2] = stressParams.memStressIterations;
-  h_stressParams[3] = stressParams.memStressPattern;
-  h_stressParams[5] = stressParams.preStressIterations;
-  h_stressParams[6] = stressParams.preStressPattern;
-  h_stressParams[7] = stressParams.permuteThread;
-  h_stressParams[8] = testParams.permuteLocation;
-  h_stressParams[9] = stressParams.testingWorkgroups;
-  h_stressParams[10] = stressParams.memStride;
+void setStaticKernelParams(KernelParams* h_kernelParams, StressParams stressParams, TestParams testParams) {
+  h_kernelParams->mem_stress_iterations = stressParams.memStressIterations;
+  h_kernelParams->mem_stress_pattern = stressParams.memStressPattern;
+  h_kernelParams->pre_stress_iterations = stressParams.preStressIterations;
+  h_kernelParams->pre_stress_pattern = stressParams.preStressPattern;
+  h_kernelParams->permute_thread = stressParams.permuteThread;
+  h_kernelParams->permute_location = testParams.permuteLocation;
+  h_kernelParams->testing_workgroups = stressParams.testingWorkgroups;
+  h_kernelParams->mem_stride = stressParams.memStride;
 
   if (testParams.aliasedMemory == 1) {
-    h_stressParams[11] = 0;
+    h_kernelParams->mem_offset = 0;
   } else {
-    h_stressParams[11] = stressParams.memStride;
+    h_kernelParams->mem_offset = stressParams.memStride;
   }
 }
 
@@ -207,7 +195,7 @@ void run(StressParams stressParams, TestParams testParams, bool print_results) {
     int testingThreads = stressParams.workgroupSize * stressParams.testingWorkgroups;
 
     int testLocSize = testingThreads * testParams.numMemLocations * stressParams.memStride * sizeof(uint);
-    cuda::atomic<uint, cuda::thread_scope_device> *testLocations;
+    d_atomic_uint *testLocations;
     cudaMalloc(&testLocations, testLocSize);
 
     int readResultsSize = testParams.numOutputs * testingThreads * sizeof(uint);
@@ -236,11 +224,10 @@ void run(StressParams stressParams, TestParams testParams, bool print_results) {
     uint *d_scratchLocations;
     cudaMalloc(&d_scratchLocations, scratchLocationsSize);
 
-    int stressParamsSize = 12 * sizeof(uint);
-    uint *h_stressParams = (uint *)malloc(stressParamsSize);
-    uint *d_stressParams;
-    cudaMalloc(&d_stressParams, stressParamsSize);
-    setStaticStressParams(h_stressParams, stressParams, testParams);
+    KernelParams *h_kernelParams = (KernelParams *)malloc(sizeof(KernelParams));
+    KernelParams *d_kernelParams;
+    cudaMalloc(&d_kernelParams, sizeof(KernelParams));
+    setStaticKernelParams(h_kernelParams, stressParams, testParams);
 
     // run iterations
     std::chrono::time_point<std::chrono::system_clock> start, end;
@@ -260,12 +247,12 @@ void run(StressParams stressParams, TestParams testParams, bool print_results) {
 	cudaMemcpy(d_shuffledWorkgroups, h_shuffledWorkgroups, shuffledWorkgroupsSize, cudaMemcpyHostToDevice);
 	setScratchLocations(h_scratchLocations, numWorkgroups, stressParams);
 	cudaMemcpy(d_scratchLocations, h_scratchLocations, scratchLocationsSize, cudaMemcpyHostToDevice);
-	setDynamicStressParams(h_stressParams, stressParams);
-	cudaMemcpy(d_stressParams, h_stressParams, stressParamsSize, cudaMemcpyHostToDevice);
+	setDynamicKernelParams(h_kernelParams, stressParams);
+	cudaMemcpy(d_kernelParams, h_kernelParams, sizeof(KernelParams), cudaMemcpyHostToDevice);
 
-        litmus_test<<<numWorkgroups, stressParams.workgroupSize>>>(testLocations, readResults, d_shuffledWorkgroups, barrier, scratchpad, d_scratchLocations, d_stressParams);
+        litmus_test<<<numWorkgroups, stressParams.workgroupSize>>>(testLocations, readResults, d_shuffledWorkgroups, barrier, scratchpad, d_scratchLocations, d_kernelParams);
 
-	check_results<<<stressParams.testingWorkgroups, stressParams.workgroupSize>>>(testLocations, readResults, d_testResults, d_stressParams);
+	check_results<<<stressParams.testingWorkgroups, stressParams.workgroupSize>>>(testLocations, readResults, d_testResults, d_kernelParams);
 
 	cudaMemcpy(h_testResults, d_testResults, sizeof(TestResults), cudaMemcpyDeviceToHost);
 
@@ -296,8 +283,8 @@ void run(StressParams stressParams, TestParams testParams, bool print_results) {
     cudaFree(scratchpad);
     cudaFree(d_scratchLocations);
     free(h_scratchLocations);
-    cudaFree(d_stressParams);
-    free(h_stressParams);
+    cudaFree(d_kernelParams);
+    free(h_kernelParams);
 }
 
 int main(int argc, char *argv[]) {

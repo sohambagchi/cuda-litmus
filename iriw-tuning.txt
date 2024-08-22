@@ -1,1 +1,1 @@
-iriw iriw-mem-device-params.txt
+iriw iriw.txt
