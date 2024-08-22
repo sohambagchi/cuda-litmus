@@ -207,7 +207,7 @@ void run(StressParams stressParams, TestParams testParams, bool print_results) {
     int testingThreads = stressParams.workgroupSize * stressParams.testingWorkgroups;
 
     int testLocSize = testingThreads * testParams.numMemLocations * stressParams.memStride * sizeof(uint);
-    cuda::atomic<uint> *testLocations;
+    cuda::atomic<uint, cuda::thread_scope_device> *testLocations;
     cudaMalloc(&testLocations, testLocSize);
 
     int readResultsSize = testParams.numOutputs * testingThreads * sizeof(uint);
@@ -224,7 +224,7 @@ void run(StressParams stressParams, TestParams testParams, bool print_results) {
     cudaMalloc(&d_shuffledWorkgroups, shuffledWorkgroupsSize);
 
     int barrierSize = sizeof(uint);
-    cuda::atomic<uint> *barrier;
+    cuda::atomic<uint, cuda::thread_scope_device> *barrier;
     cudaMalloc(&barrier, barrierSize);
 
     int scratchpadSize = stressParams.scratchMemorySize * sizeof(uint);

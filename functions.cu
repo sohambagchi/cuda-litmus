@@ -8,7 +8,7 @@ __device__ uint stripe_workgroup(uint workgroup_id, uint local_id, uint testing_
     return (workgroup_id + 1 + local_id % (testing_workgroups - 1)) % testing_workgroups;
 }
 
-__device__ void spin(cuda::atomic<uint>* barrier, uint limit) {
+__device__ void spin(cuda::atomic<uint, cuda::thread_scope_device>* barrier, uint limit) {
     int i = 0;
     uint val = barrier->fetch_add(1, cuda::memory_order_relaxed);
     while (i < 1024 && val < limit) {

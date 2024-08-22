@@ -41,13 +41,13 @@ __global__ void litmus_test(
 
 	if (id_0_final != id_1_final) {
             if (id_1_first_half) { // one observer thread reads x then y
-		uint r0 = test_locations[x_1].load(cuda::memory_order_relaxed);
+		uint r0 = test_locations[x_1].load(cuda::memory_order_acquire);
 		uint r1 = test_locations[y_1].load(cuda::memory_order_relaxed);
 	        cuda::atomic_thread_fence(cuda::memory_order_seq_cst);
 	        read_results[id_1_final * 4] = r0;
 	        read_results[id_1_final * 4 + 1] = r1;
             } else { // other observer thread reads y then x
-		uint r2 = test_locations[y_1].load(cuda::memory_order_relaxed);
+		uint r2 = test_locations[y_1].load(cuda::memory_order_acquire);
 		uint r3 = test_locations[x_1].load(cuda::memory_order_relaxed);
 	        cuda::atomic_thread_fence(cuda::memory_order_seq_cst);
 	        read_results[id_1_final * 4 + 2] = r2;
