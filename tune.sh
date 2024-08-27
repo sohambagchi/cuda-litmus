@@ -33,6 +33,7 @@ function random_config() {
   echo "testingWorkgroups=$testingWorkgroups" >> $PARAM_FILE
   local maxWorkgroups=$(random_between $testingWorkgroups $workgroupLimiter)
   echo "maxWorkgroups=$maxWorkgroups" >> $PARAM_FILE
+  # ensures total threads is divisible by 2
   local workgroupSize=$(make_even $(random_between 1 $workgroupSizeLimiter))
   echo "workgroupSize=$workgroupSize" >> $PARAM_FILE
   echo "shufflePct=$(random_between 0 100)" >> $PARAM_FILE
@@ -55,16 +56,17 @@ function random_config() {
 
 function run_test() {
   local test_name=$1
-  local test_params=$2
-  res=$(./$TARGET_DIR/$test_name-runner -s $PARAM_FILE -t $PARAMS_DIR/$test_params)
+  local test_scope=$2
+  local test_params=$3
+  res=$(./$TARGET_DIR/$test_name-$test_scope-runner -s $PARAM_FILE -t $PARAMS_DIR/$test_params)
   local weak_behaviors=$(echo "$res" | tail -n 1 | sed 's/.*of weak behaviors: \(.*\)$/\1/')
   local weak_pct=$(echo "$res" | tail -n 2 | head -n 1 | sed 's/.*percentage: \(.*\)$/\1/')
   local weak_rate=$(echo "$res" | tail -n 3 | head -n 1 | sed 's/.*rate: \(.*\) per second/\1/')
 
-  echo "  Test $test_shader weak behaviors: $weak_behaviors, $weak_pct, rate: $weak_rate per second"
+  echo "  Test $test_name-$test_scope weak behaviors: $weak_behaviors, $weak_pct, rate: $weak_rate per second"
 
   if (( $(echo "$weak_rate > 0" | bc -l) )); then
-    local test_result_dir="$RESULT_DIR/$test_name"
+    local test_result_dir="$RESULT_DIR/$test_name-$test_scope"
     if [ ! -d "$test_result_dir" ] ; then
       mkdir "$test_result_dir"
       cp $PARAM_FILE "$test_result_dir"
@@ -103,7 +105,7 @@ iter=0
 # build binaries
 for test in "${tests[@]}"; do
   test_info=(${test})
-  nvcc -I. -rdc=true -arch sm_60 runner.cu functions.cu "kernels/${test_info[0]}.cu" -o "$TARGET_DIR/${test_info[0]}-runner"
+  nvcc -D"${test_info[1]}" -I. -rdc=true -arch sm_60 runner.cu functions.cu "kernels/${test_info[0]}.cu" -o "$TARGET_DIR/${test_info[0]}-${test_info[1]}-runner"
 done
 
 
@@ -113,7 +115,7 @@ do
   random_config 1024 256
   for test in "${tests[@]}"; do
     test_info=(${test})
-    run_test "${test_info[0]}" "${test_info[1]}"
+    run_test "${test_info[0]}" "${test_info[1]}" "${test_info[2]}"
   done
   iter=$((iter + 1))
 done

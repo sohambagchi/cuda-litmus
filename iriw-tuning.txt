@@ -1,1 +1,12 @@
-iriw iriw.txt
+iriw SCOPE_SYSTEM iriw.txt
+iriw SCOPE_DEVICE iriw.txt
+iriw SCOPE_BLOCK iriw.txt
+iriw-acq SCOPE_SYSTEM iriw.txt
+iriw-acq SCOPE_DEVICE iriw.txt
+iriw-acq SCOPE_BLOCK iriw.txt
+iriw-same-block SCOPE_SYSTEM iriw.txt
+iriw-same-block SCOPE_DEVICE iriw.txt
+iriw-same-block SCOPE_BLOCK iriw.txt
+iriw-acq-same-block SCOPE_SYSTEM iriw.txt
+iriw-acq-same-block SCOPE_DEVICE iriw.txt
+iriw-acq-same-block SCOPE_BLOCK iriw.txt
