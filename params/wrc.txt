@@ -1,4 +1,4 @@
-numOutputs=4
+numOutputs=3
 numMemLocations=2
 permuteLocation=1031
 aliasedMemory=0

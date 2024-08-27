@@ -1,0 +1,6 @@
+wrc SCOPE_SYSTEM wrc.txt
+wrc SCOPE_DEVICE wrc.txt
+wrc SCOPE_BLOCK wrc.txt
+wrc-data-acq SCOPE_SYSTEM wrc.txt
+wrc-data-acq SCOPE_DEVICE wrc.txt
+wrc-data-acq SCOPE_BLOCK wrc.txt

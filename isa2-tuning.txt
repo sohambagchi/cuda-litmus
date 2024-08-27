@@ -1,0 +1,6 @@
+isa2 SCOPE_SYSTEM isa2.txt
+isa2 SCOPE_DEVICE isa2.txt
+isa2 SCOPE_BLOCK isa2.txt
+isa2-rel-data-acq SCOPE_SYSTEM isa2.txt
+isa2-rel-data-acq SCOPE_DEVICE isa2.txt
+isa2-rel-data-acq SCOPE_BLOCK isa2.txt
