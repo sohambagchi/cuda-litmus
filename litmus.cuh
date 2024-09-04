@@ -16,6 +16,12 @@ typedef cuda::atomic<uint, cuda::thread_scope_system> d_atomic_uint;
 typedef cuda::atomic<uint> d_atomic_uint; // default, which is system too
 #endif
 
+typedef struct {
+  uint r0;
+  uint r1;
+  uint r2;
+  uint r3;
+} ReadResults;
 
 typedef struct {
   cuda::atomic<uint, cuda::thread_scope_device> seq0;
@@ -48,7 +54,7 @@ typedef struct {
 
 __global__ void litmus_test(
   d_atomic_uint* test_locations,
-  uint* read_results,
+  ReadResults* read_results,
   uint* shuffled_workgroups,
   cuda::atomic<uint, cuda::thread_scope_device>* barrier,
   uint* scratchpad,
@@ -57,7 +63,7 @@ __global__ void litmus_test(
 
 __global__ void check_results(
   d_atomic_uint* test_locations,
-  uint* read_results,
+  ReadResults* read_results,
   TestResults* test_results,
   KernelParams* kernel_params);
 

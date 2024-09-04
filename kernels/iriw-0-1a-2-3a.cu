@@ -4,7 +4,7 @@
 
 __global__ void litmus_test(
   d_atomic_uint* test_locations,
-  uint* read_results,
+  ReadResults* read_results,
   uint* shuffled_workgroups,
   cuda::atomic<uint, cuda::thread_scope_device>* barrier,
   uint* scratchpad,
@@ -45,15 +45,15 @@ __global__ void litmus_test(
         uint r0 = test_locations[x_1].load(cuda::memory_order_acquire);
         uint r1 = test_locations[y_1].load(cuda::memory_order_relaxed);
         cuda::atomic_thread_fence(cuda::memory_order_seq_cst);
-        read_results[id_1_final * 4] = r0;
-        read_results[id_1_final * 4 + 1] = r1;
+        read_results[id_1_final].r0 = r0;
+        read_results[id_1_final].r1 = r1;
       }
       else { // other observer thread reads y then x
         uint r2 = test_locations[y_1].load(cuda::memory_order_acquire);
         uint r3 = test_locations[x_1].load(cuda::memory_order_relaxed);
         cuda::atomic_thread_fence(cuda::memory_order_seq_cst);
-        read_results[id_1_final * 4 + 2] = r2;
-        read_results[id_1_final * 4 + 3] = r3;
+        read_results[id_1_final].r2 = r2;
+        read_results[id_1_final].r3 = r3;
       }
     }
   }
@@ -64,17 +64,17 @@ __global__ void litmus_test(
 
 __global__ void check_results(
   d_atomic_uint* test_locations,
-  uint* read_results,
+  ReadResults* read_results,
   TestResults* test_results,
   KernelParams* kernel_params) {
   uint id_0 = blockIdx.x * blockDim.x + threadIdx.x;
   if (id_0 < (blockDim.x * kernel_params->testing_workgroups) / 2) {
     uint x_0 = id_0 * kernel_params->mem_stride * 2;
     uint mem_x_0 = test_locations[x_0];
-    uint r0 = read_results[id_0 * 4];
-    uint r1 = read_results[id_0 * 4 + 1];
-    uint r2 = read_results[id_0 * 4 + 2];
-    uint r3 = read_results[id_0 * 4 + 3];
+    uint r0 = read_results[id_0].r0;
+    uint r1 = read_results[id_0].r1;
+    uint r2 = read_results[id_0].r2;
+    uint r3 = read_results[id_0].r3;
 
     if (r0 == 0 && r1 == 0 && r2 == 0 && r3 == 0) { // both observers run first
       test_results->seq0.fetch_add(1);

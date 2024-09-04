@@ -196,8 +196,8 @@ void run(StressParams stressParams, TestParams testParams, bool print_results) {
   d_atomic_uint* testLocations;
   cudaMalloc(&testLocations, testLocSize);
 
-  int readResultsSize = testParams.numOutputs * testingThreads * sizeof(uint);
-  uint* readResults;
+  int readResultsSize = sizeof(ReadResults) * testingThreads;
+  ReadResults* readResults;
   cudaMalloc(&readResults, readResultsSize);
 
   TestResults* h_testResults = (TestResults*)malloc(sizeof(TestResults));
