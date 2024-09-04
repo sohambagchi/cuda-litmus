@@ -10,7 +10,6 @@
 #include "litmus.cuh"
 
 typedef struct {
-  int numOutputs;
   int numMemLocations;
   int permuteLocation;
   int aliasedMemory;
@@ -50,8 +49,7 @@ int parseTestParamsFile(const char* filename, TestParams* config) {
     char key[64];
     int value;
     if (sscanf(line, "%63[^=]=%d", key, &value) == 2) {
-      if (strcmp(key, "numOutputs") == 0) config->numOutputs = value;
-      else if (strcmp(key, "numMemLocations") == 0) config->numMemLocations = value;
+      if (strcmp(key, "numMemLocations") == 0) config->numMemLocations = value;
       else if (strcmp(key, "permuteLocation") == 0) config->permuteLocation = value;
       else if (strcmp(key, "aliasedMemory") == 0) config->aliasedMemory = value;
       else if (strcmp(key, "workgroupMemory") == 0) config->workgroupMemory = value;
