@@ -4,7 +4,7 @@
 
 __global__ void litmus_test(
   d_atomic_uint* test_locations,
-  uint* read_results,
+  ReadResults* read_results,
   uint* shuffled_workgroups,
   cuda::atomic<uint, cuda::thread_scope_device>* barrier,
   uint* scratchpad,
@@ -37,17 +37,17 @@ __global__ void litmus_test(
       test_locations[x_0].store(1, cuda::memory_order_relaxed);
 
       // Thread 1
-      uint r0 = test_locations[x_1].load(cuda::memory_order_relaxed);
-      test_locations[y_1].store(r0, cuda::memory_order_relaxed);
+      uint r0 = test_locations[x_1].load(cuda::memory_order_acquire);
+      test_locations[y_1].store(1, cuda::memory_order_relaxed);
 
       // Thread 2
-      uint r1 = test_locations[y_2].load(cuda::memory_order_relaxed);
+      uint r1 = test_locations[y_2].load(cuda::memory_order_acquire);
       uint r2 = test_locations[x_2].load(cuda::memory_order_relaxed);
 
       cuda::atomic_thread_fence(cuda::memory_order_seq_cst);
-      read_results[id_1 * 3] = r0;
-      read_results[id_2 * 3 + 1] = r1;
-      read_results[id_2 * 3 + 2] = r2;
+      read_results[id_1].r0 = r0;
+      read_results[id_2].r1 = r1;
+      read_results[id_2].r2 = r2;
     }
   }
   else if (kernel_params->mem_stress) {
@@ -57,13 +57,13 @@ __global__ void litmus_test(
 
 __global__ void check_results(
   d_atomic_uint* test_locations,
-  uint* read_results,
+  ReadResults* read_results,
   TestResults* test_results,
   KernelParams* kernel_params) {
   uint id_0 = blockIdx.x * blockDim.x + threadIdx.x;
-  uint r0 = read_results[id_0 * 3];
-  uint r1 = read_results[id_0 * 3 + 1];
-  uint r2 = read_results[id_0 * 3 + 2];
+  uint r0 = read_results[id_0].r0;
+  uint r1 = read_results[id_0].r1;
+  uint r2 = read_results[id_0].r2;
 
   if (r0 == 1 && r1 == 1 && r2 == 1) {
     test_results->seq0.fetch_add(1);
