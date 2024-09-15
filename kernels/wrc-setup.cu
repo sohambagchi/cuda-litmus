@@ -2,6 +2,18 @@
 #include "litmus.cuh"
 #include "functions.cuh"
 
+#ifdef WRC_0_1_2
+#include "wrc-0-1-2.h"
+#elif defined(WRC_01_2)
+#include "wrc-01-2.h"
+#elif defined(WRC_0_12)
+#include "wrc-0-12.h"
+#elif defined(WRC_012)
+#include "wrc-012.h"
+#else
+#include "wrc-0-1-2.h" // default to all different threadblocks
+#endif
+
 __global__ void litmus_test(
   d_atomic_uint* test_locations,
   ReadResults* read_results,
@@ -13,16 +25,33 @@ __global__ void litmus_test(
 
   uint shuffled_workgroup = shuffled_workgroups[blockIdx.x];
   if (shuffled_workgroup < kernel_params->testing_workgroups) {
-    uint total_ids = blockDim.x * kernel_params->testing_workgroups;
-    uint id_0 = shuffled_workgroup * blockDim.x + threadIdx.x;
-    uint id_1 = shuffled_workgroup * blockDim.x + permute_id(threadIdx.x, kernel_params->permute_thread, blockDim.x);
-    uint new_workgroup = stripe_workgroup(shuffled_workgroup, threadIdx.x, kernel_params->testing_workgroups);
-    uint id_2 = new_workgroup * blockDim.x + permute_id(threadIdx.x, kernel_params->permute_thread, blockDim.x);
-    uint x_0 = id_0 * kernel_params->mem_stride * 2;
-    uint x_1 = id_1 * kernel_params->mem_stride * 2;
-    uint y_1 = permute_id(id_1, kernel_params->permute_location, total_ids) * kernel_params->mem_stride * 2 + kernel_params->mem_offset;
-    uint x_2 = id_2 * kernel_params->mem_stride * 2;
-    uint y_2 = permute_id(id_2, kernel_params->permute_location, total_ids) * kernel_params->mem_stride * 2 + kernel_params->mem_offset;
+
+#ifdef ACQUIRE
+    cuda::memory_order thread_1_load = cuda::memory_order_acquire;
+    cuda::memory_order thread_1_store = cuda::memory_order_relaxed;
+    cuda::memory_order thread_2_load = cuda::memory_order_acquire;
+#elif defined(RELEASE)
+    cuda::memory_order thread_1_load = cuda::memory_order_relaxed;
+    cuda::memory_order thread_1_store = cuda::memory_order_release;
+    cuda::memory_order thread_2_load = cuda::memory_order_acquire;
+#elif defined(RELAXED)
+    cuda::memory_order thread_1_load = cuda::memory_order_relaxed;
+    cuda::memory_order thread_1_store = cuda::memory_order_relaxed;
+    cuda::memory_order thread_2_load = cuda::memory_order_relaxed;
+#else
+    cuda::memory_order thread_1_load = cuda::memory_order_relaxed; // default to all relaxed
+    cuda::memory_order thread_1_store = cuda::memory_order_relaxed;
+    cuda::memory_order thread_2_load = cuda::memory_order_relaxed;
+#endif
+
+    // defined for different distributions of threads across threadblocks
+    DEFINE_IDS();
+
+    uint x_0 = (wg_offset + id_0) * kernel_params->mem_stride * 2;
+    uint x_1 = (wg_offset + id_1) * kernel_params->mem_stride * 2;
+    uint y_1 = (wg_offset + permute_id(id_1, kernel_params->permute_location, total_ids)) * kernel_params->mem_stride * 2 + kernel_params->mem_offset;
+    uint x_2 = (wg_offset + id_2) * kernel_params->mem_stride * 2;
+    uint y_2 = (wg_offset + permute_id(id_2, kernel_params->permute_location, total_ids)) * kernel_params->mem_stride * 2 + kernel_params->mem_offset;
 
     if (kernel_params->pre_stress) {
       do_stress(scratchpad, scratch_locations, kernel_params->pre_stress_iterations, kernel_params->pre_stress_pattern);
@@ -31,23 +60,23 @@ __global__ void litmus_test(
       spin(barrier, blockDim.x * kernel_params->testing_workgroups);
     }
 
-    if (id_0 != id_1) {
+    if (id_0 != id_1 && id_1 != id_2) {
 
       // Thread 0
       test_locations[x_0].store(1, cuda::memory_order_relaxed);
 
       // Thread 1
-      uint r0 = test_locations[x_1].load(cuda::memory_order_acquire);
-      test_locations[y_1].store(1, cuda::memory_order_relaxed);
+      uint r0 = test_locations[x_1].load(thread_1_load);
+      test_locations[y_1].store(1, thread_1_store);
 
       // Thread 2
-      uint r1 = test_locations[y_2].load(cuda::memory_order_acquire);
+      uint r1 = test_locations[y_2].load(thread_2_load);
       uint r2 = test_locations[x_2].load(cuda::memory_order_relaxed);
 
       cuda::atomic_thread_fence(cuda::memory_order_seq_cst);
-      read_results[id_1].r0 = r0;
-      read_results[id_2].r1 = r1;
-      read_results[id_2].r2 = r2;
+      read_results[wg_offset + id_1].r0 = r0;
+      read_results[wg_offset + id_2].r1 = r1;
+      read_results[wg_offset + id_2].r2 = r2;
     }
   }
   else if (kernel_params->mem_stress) {
