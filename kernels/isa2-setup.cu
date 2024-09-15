@@ -2,6 +2,18 @@
 #include "litmus.cuh"
 #include "functions.cuh"
 
+#ifdef ISA2_0_1_2
+#include "isa2-0-1-2.h"
+#elif defined(ISA2_01_2)
+#include "isa2-01-2.h"
+#elif defined(ISA2_0_12)
+#include "isa2-0-12.h"
+#elif defined(ISA2_012)
+#include "isa2-012.h"
+#else
+#include "isa2-0-1-2.h" // default to all different threadblocks
+#endif
+
 __global__ void litmus_test(
   d_atomic_uint* test_locations,
   ReadResults* read_results,
@@ -13,11 +25,37 @@ __global__ void litmus_test(
 
   uint shuffled_workgroup = shuffled_workgroups[blockIdx.x];
   if (shuffled_workgroup < kernel_params->testing_workgroups) {
-    uint total_ids = blockDim.x;
-    uint wg_offset = shuffled_workgroup * blockDim.x;
-    uint id_0 = threadIdx.x;
-    uint id_1 = permute_id(threadIdx.x, kernel_params->permute_thread, blockDim.x);
-    uint id_2 = permute_id(id_1, kernel_params->permute_thread, blockDim.x);
+
+#ifdef ACQUIRE
+    cuda::memory_order thread_0_store = cuda::memory_order_release;
+    cuda::memory_order thread_1_load = cuda::memory_order_acquire;
+    cuda::memory_order thread_1_store = cuda::memory_order_relaxed;
+    cuda::memory_order thread_2_load = cuda::memory_order_acquire;
+#elif defined(RELEASE)
+    cuda::memory_order thread_0_store = cuda::memory_order_release;
+    cuda::memory_order thread_1_load = cuda::memory_order_relaxed;
+    cuda::memory_order thread_1_store = cuda::memory_order_release;
+    cuda::memory_order thread_2_load = cuda::memory_order_acquire;
+#elif defined(ACQUIRE_RELEASE)
+    cuda::memory_order thread_0_store = cuda::memory_order_release;
+    cuda::memory_order thread_1_load = cuda::memory_order_acquire;
+    cuda::memory_order thread_1_store = cuda::memory_order_release;
+    cuda::memory_order thread_2_load = cuda::memory_order_acquire;
+#elif defined(RELAXED)
+    cuda::memory_order thread_0_store = cuda::memory_order_relaxed;
+    cuda::memory_order thread_1_load = cuda::memory_order_relaxed;
+    cuda::memory_order thread_1_store = cuda::memory_order_relaxed;
+    cuda::memory_order thread_2_load = cuda::memory_order_relaxed;
+#else
+    cuda::memory_order thread_0_store = cuda::memory_order_relaxed; // default to all relaxed
+    cuda::memory_order thread_1_load = cuda::memory_order_relaxed;
+    cuda::memory_order thread_1_store = cuda::memory_order_relaxed;
+    cuda::memory_order thread_2_load = cuda::memory_order_relaxed;
+#endif
+
+    // defined for different distributions of threads across threadblocks
+    DEFINE_IDS();
+
     uint x_0 = (wg_offset + id_0) * kernel_params->mem_stride * 3;
     uint y_0 = (wg_offset + permute_id(id_0, kernel_params->permute_location, total_ids)) * kernel_params->mem_stride * 3 + kernel_params->mem_offset;
     uint permute_id_1 = permute_id(id_1, kernel_params->permute_location, total_ids);
@@ -34,18 +72,18 @@ __global__ void litmus_test(
       spin(barrier, blockDim.x * kernel_params->testing_workgroups);
     }
 
-    if (id_0 != id_1 && id_1 != id_2) {
+    if (id_1 != id_2) {
 
       // Thread 0
       test_locations[x_0].store(1, cuda::memory_order_relaxed);
-      test_locations[y_0].store(1, cuda::memory_order_relaxed);
+      test_locations[y_0].store(1, thread_0_store);
 
       // Thread 1
-      uint r0 = test_locations[y_1].load(cuda::memory_order_relaxed);
-      test_locations[z_1].store(1, cuda::memory_order_relaxed);
+      uint r0 = test_locations[y_1].load(thread_1_load);
+      test_locations[z_1].store(1, thread_1_store);
 
       // Thread 2
-      uint r1 = test_locations[z_2].load(cuda::memory_order_relaxed);
+      uint r1 = test_locations[z_2].load(thread_2_load);
       uint r2 = test_locations[x_2].load(cuda::memory_order_relaxed);
 
       cuda::atomic_thread_fence(cuda::memory_order_seq_cst);

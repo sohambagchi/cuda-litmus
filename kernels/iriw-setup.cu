@@ -9,9 +9,8 @@
 #elif defined(IRIW_0123)
 #include "iriw-0123.h"
 #else
-#include "iriw-0-1-2-3.h" // default to all different workgroups
+#include "iriw-0-1-2-3.h" // default to all different threadblocks
 #endif
-
 
 __global__ void litmus_test(
   d_atomic_uint* test_locations,
