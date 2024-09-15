@@ -12,12 +12,6 @@
 #include "iriw-0-1-2-3.h" // default to all different workgroups
 #endif
 
-#ifdef ACQUIRE_VARIANT
-typedef first_mem_order = cuda::memory_order_acquire;
-#else
-typedef first_mem_order = cuda::memory_order_relaxed;
-#endif
-
 
 __global__ void litmus_test(
   d_atomic_uint* test_locations,
@@ -29,6 +23,14 @@ __global__ void litmus_test(
   KernelParams* kernel_params) {
   uint shuffled_workgroup = shuffled_workgroups[blockIdx.x];
   if (shuffled_workgroup < kernel_params->testing_workgroups) {
+
+#ifdef ACQUIRE
+    cuda::memory_order first_mem_order = cuda::memory_order_acquire;
+#elif defined(RELAXED)
+    cuda::memory_order first_mem_order = cuda::memory_order_relaxed;
+#else
+    cuda::memory_order first_mem_order = cuda::memory_order_relaxed; // default to relaxed
+#endif
 
     // defined for different distributions of threads across threadblocks
     DEFINE_IDS();

@@ -55,18 +55,19 @@ function random_config() {
 }
 
 function run_test() {
-  local test_name=$1
-  local test_scope=$2
-  local test_params=$3
-  res=$(./$TARGET_DIR/$test_name-$test_scope-runner -s $PARAM_FILE -t $PARAMS_DIR/$test_params)
+  local name=$1
+  local scope=$2
+  local variant=$3
+  local params=$4
+  res=$(./$TARGET_DIR/$name-$scope-$variant-runner -s $PARAM_FILE -t $PARAMS_DIR/$params)
   local weak_behaviors=$(echo "$res" | tail -n 1 | sed 's/.*of weak behaviors: \(.*\)$/\1/')
   local weak_pct=$(echo "$res" | tail -n 2 | head -n 1 | sed 's/.*percentage: \(.*\)$/\1/')
   local weak_rate=$(echo "$res" | tail -n 3 | head -n 1 | sed 's/.*rate: \(.*\) per second/\1/')
 
-  echo "  Test $test_name-$test_scope weak behaviors: $weak_behaviors, $weak_pct, rate: $weak_rate per second"
+  echo "  Test $name-$scope-$variant weak behaviors: $weak_behaviors, $weak_pct, rate: $weak_rate per second"
 
   if (( $(echo "$weak_rate > 0" | bc -l) )); then
-    local test_result_dir="$RESULT_DIR/$test_name-$test_scope"
+    local test_result_dir="$RESULT_DIR/$name-$scope-$variant"
     if [ ! -d "$test_result_dir" ] ; then
       mkdir "$test_result_dir"
       cp $PARAM_FILE "$test_result_dir"
@@ -83,7 +84,7 @@ function run_test() {
 }
 
 if [ $# != 1 ] ; then
-  echo "Need to pass file with lists of tests"
+  echo "Need to pass file with test combinations"
   exit 1
 fi
 
@@ -95,27 +96,39 @@ if [ ! -d "$TARGET_DIR" ] ; then
   mkdir $TARGET_DIR
 fi
 
+tuning_file=$1
 
-test_file=$1
+# Read lines into arrays
+read -a test_info <<< "$(sed -n '1p' $tuning_file)"
+read -a names <<< "$(sed -n '2p' $tuning_file)"
+read -a scopes <<< "$(sed -n '3p' $tuning_file)"
+read -a variants <<< "$(sed -n '4p' $tuning_file)"
 
-readarray tests < $test_file
-
-iter=0
+test="${test_info[0]}"
+params="${test_info[1]}"
 
 # build binaries
-for test in "${tests[@]}"; do
-  test_info=(${test})
-  nvcc -D"${test_info[1]}" -I. -rdc=true -arch sm_60 runner.cu functions.cu "kernels/${test_info[0]}.cu" -o "$TARGET_DIR/${test_info[0]}-${test_info[1]}-runner"
+for name in ${names[@]}; do
+    for scope in ${scopes[@]}; do
+        for variant in ${variants[@]}; do
+  	    nvcc -D$name -D$scope -D$variant -I. -rdc=true -arch sm_60 runner.cu functions.cu "kernels/$test-setup.cu" -o "$TARGET_DIR/$name-$scope-$variant-runner"
+        done
+    done
 done
 
+iter=0
 
 while [ true ]
 do
   echo "Iteration: $iter"
   random_config 1024 256
-  for test in "${tests[@]}"; do
-    test_info=(${test})
-    run_test "${test_info[0]}" "${test_info[1]}" "${test_info[2]}"
+  for name in ${names[@]}; do
+    for scope in ${scopes[@]}; do
+      for variant in ${variants[@]}; do
+        run_test $name $scope $variant $params
+      done
+    done
   done
   iter=$((iter + 1))
 done
+
