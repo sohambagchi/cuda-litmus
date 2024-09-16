@@ -16,6 +16,28 @@ typedef cuda::atomic<uint, cuda::thread_scope_system> d_atomic_uint;
 typedef cuda::atomic<uint> d_atomic_uint; // default, which is system too
 #endif
 
+#define THREE_THREAD_TWO_MEM_LOCATIONS() \
+  uint x_0 = (wg_offset + id_0) * kernel_params->mem_stride * 2; \
+  uint x_1 = (wg_offset + id_1) * kernel_params->mem_stride * 2; \
+  uint y_1 = (wg_offset + permute_id(id_1, kernel_params->permute_location, total_ids)) * kernel_params->mem_stride * 2 + kernel_params->mem_offset; \
+  uint x_2 = (wg_offset + id_2) * kernel_params->mem_stride * 2; \
+  uint y_2 = (wg_offset + permute_id(id_2, kernel_params->permute_location, total_ids)) * kernel_params->mem_stride * 2 + kernel_params->mem_offset;
+
+
+
+#define PRE_STRESS() \
+  if (kernel_params->pre_stress) { \
+    do_stress(scratchpad, scratch_locations, kernel_params->pre_stress_iterations, kernel_params->pre_stress_pattern); \
+  } \
+  if (kernel_params->barrier) { \
+    spin(barrier, blockDim.x * kernel_params->testing_workgroups); \
+  }
+
+#define MEM_STRESS() \
+  else if (kernel_params->mem_stress) { \
+    do_stress(scratchpad, scratch_locations, kernel_params->mem_stress_iterations, kernel_params->pre_stress_iterations); \
+  }
+
 typedef struct {
   uint r0;
   uint r1;

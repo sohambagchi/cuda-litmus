@@ -26,21 +26,21 @@ __global__ void litmus_test(
   uint shuffled_workgroup = shuffled_workgroups[blockIdx.x];
   if (shuffled_workgroup < kernel_params->testing_workgroups) {
 
-#ifdef ACQUIRE
+#ifdef STORE_SC 
     cuda::memory_order thread_1_load = cuda::memory_order_acquire;
-    cuda::memory_order thread_1_store = cuda::memory_order_relaxed;
-    cuda::memory_order thread_2_load = cuda::memory_order_acquire;
-#elif defined(RELEASE)
-    cuda::memory_order thread_1_load = cuda::memory_order_relaxed;
-    cuda::memory_order thread_1_store = cuda::memory_order_release;
-    cuda::memory_order thread_2_load = cuda::memory_order_acquire;
+    cuda::memory_order thread_2_store = cuda::memory_order_seq_cst;
+    cuda::memory_order thread_2_load = cuda::memory_order_relaxed;
+#elif defined(LOAD_SC)
+    cuda::memory_order thread_1_load = cuda::memory_order_acquire;
+    cuda::memory_order thread_2_store = cuda::memory_order_relaxed;
+    cuda::memory_order thread_2_load = cuda::memory_order_seq_cst;
 #elif defined(RELAXED)
     cuda::memory_order thread_1_load = cuda::memory_order_relaxed;
-    cuda::memory_order thread_1_store = cuda::memory_order_relaxed;
+    cuda::memory_order thread_2_store = cuda::memory_order_relaxed;
     cuda::memory_order thread_2_load = cuda::memory_order_relaxed;
 #else
     cuda::memory_order thread_1_load = cuda::memory_order_relaxed; // default to all relaxed
-    cuda::memory_order thread_1_store = cuda::memory_order_relaxed;
+    cuda::memory_order thread_2_store = cuda::memory_order_relaxed;
     cuda::memory_order thread_2_load = cuda::memory_order_relaxed;
 #endif
 
@@ -59,15 +59,15 @@ __global__ void litmus_test(
 
       // Thread 1
       uint r0 = test_locations[x_1].load(thread_1_load);
-      test_locations[y_1].store(1, thread_1_store);
+      uint r1 = test_locations[y_1].load(cuda::memory_order_relaxed);
 
       // Thread 2
-      uint r1 = test_locations[y_2].load(thread_2_load);
-      uint r2 = test_locations[x_2].load(cuda::memory_order_relaxed);
+      test_locations[y_2].store(1, thread_2_store);
+      uint r2 = test_locations[x_2].load(thread_2_load);
 
       cuda::atomic_thread_fence(cuda::memory_order_seq_cst);
       read_results[wg_offset + id_1].r0 = r0;
-      read_results[wg_offset + id_2].r1 = r1;
+      read_results[wg_offset + id_1].r1 = r1;
       read_results[wg_offset + id_2].r2 = r2;
     }
   }
@@ -85,22 +85,22 @@ __global__ void check_results(
   uint r1 = read_results[id_0].r1;
   uint r2 = read_results[id_0].r2;
 
-  if (r0 == 1 && r1 == 1 && r2 == 1) {
+  if (r0 == 1 && r1 == 1 && r2 == 0) {
     test_results->seq0.fetch_add(1);
   }
-  else if (r0 == 0 && r1 == 0 && r2 == 0) {
+  else if (r0 == 0 && r1 == 0 && r2 == 1) {
     test_results->seq1.fetch_add(1);
   }
-  else if (r0 == 0 && r1 == 0 && r2 == 1) {
+  else if (r0 == 0 && r1 == 0 && r2 == 0) {
     test_results->seq2.fetch_add(1);
   }
-  else if (r0 == 1 && r1 == 0 && r2 == 0) {
-    test_results->seq3.fetch_add(1);
-  }
-  else if (r0 == 1 && r1 == 0 && r2 == 1) {
+  else if (r0 == 1 && r1 == 1 && r2 == 1) {
     test_results->interleaved0.fetch_add(1);
   }
-  else if (r0 == 1 && r1 == 1 && r2 == 0) {
+  else if (r0 == 0 && r1 == 1 && r2 == 0) {
+    test_results->interleaved1.fetch_add(1);
+  }
+  else if (r0 == 1 && r1 == 0 && r2 == 0) {
     test_results->weak.fetch_add(1);
   }
   else {
@@ -110,14 +110,13 @@ __global__ void check_results(
 
 int host_check_results(TestResults* results, bool print) {
   if (print) {
-    std::cout << "r0=0, r1=1, r2=1 (seq): " << results->seq0 << "\n";
-    std::cout << "r0=0, r1=0, r2=0 (seq): " << results->seq1 << "\n";
-    std::cout << "r0=0, r1=0, r2=1 (seq): " << results->seq2 << "\n";
-    std::cout << "r0=1, r1=0, r2=0 (seq): " << results->seq3 << "\n";
-    std::cout << "r0=1, r1=0, r2=1 (interleaved): " << results->interleaved0 << "\n";
-    std::cout << "r0=1, r1=1, r2=0 (weak): " << results->weak << "\n";
+    std::cout << "r0=1, r1=1, r2=0 (seq): " << results->seq0 << "\n";
+    std::cout << "r0=0, r1=0, r2=1 (seq): " << results->seq1 << "\n";
+    std::cout << "r0=0, r1=0, r2=0 (seq): " << results->seq2 << "\n";
+    std::cout << "r0=1, r1=1, r2=1 (interleaved): " << results->interleaved0 << "\n";
+    std::cout << "r0=0, r1=1, r2=0 (interleaved): " << results->interleaved1 << "\n";
+    std::cout << "r0=1, r1=0, r2=0 (weak): " << results->weak << "\n";
     std::cout << "other: " << results->other << "\n";
   }
   return results->weak;
 }
-
