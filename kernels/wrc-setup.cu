@@ -2,16 +2,16 @@
 #include "litmus.cuh"
 #include "functions.cuh"
 
-#ifdef WRC_0_1_2
-#include "wrc-0-1-2.h"
-#elif defined(WRC_01_2)
-#include "wrc-01-2.h"
-#elif defined(WRC_0_12)
-#include "wrc-0-12.h"
-#elif defined(WRC_012)
-#include "wrc-012.h"
+#ifdef TB_0_1_2
+#include "tb-0-1-2.h"
+#elif defined(TB_01_2)
+#include "tb-01-2.h"
+#elif defined(TB_0_12)
+#include "tb-0-12.h"
+#elif defined(TB_012)
+#include "tb-012.h"
 #else
-#include "wrc-0-1-2.h" // default to all different threadblocks
+#include "tb-0-1-2.h" // default to all different threadblocks
 #endif
 
 __global__ void litmus_test(

@@ -2,16 +2,16 @@
 #include "litmus.cuh"
 #include "functions.cuh"
 
-#ifdef ISA2_0_1_2
-#include "isa2-0-1-2.h"
-#elif defined(ISA2_01_2)
-#include "isa2-01-2.h"
-#elif defined(ISA2_0_12)
-#include "isa2-0-12.h"
-#elif defined(ISA2_012)
-#include "isa2-012.h"
+#ifdef TB_0_1_2
+#include "tb-0-1-2.h"
+#elif defined(TB_01_2)
+#include "tb-01-2.h"
+#elif defined(TB_0_12)
+#include "tb-0-12.h"
+#elif defined(TB_012)
+#include "tb-012.h"
 #else
-#include "isa2-0-1-2.h" // default to all different threadblocks
+#include "tb-0-1-2.h" // default to all different threadblocks
 #endif
 
 __global__ void litmus_test(
