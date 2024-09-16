@@ -30,11 +30,13 @@ function random_config() {
 
   echo "testIterations=200" > $PARAM_FILE
   local testingWorkgroups=$(random_between 2 $workgroupLimiter)
+  echo "Testing threadblocks: $testingWorkgroups"
   echo "testingWorkgroups=$testingWorkgroups" >> $PARAM_FILE
   local maxWorkgroups=$(random_between $testingWorkgroups $workgroupLimiter)
   echo "maxWorkgroups=$maxWorkgroups" >> $PARAM_FILE
   # ensures total threads is divisible by 2
   local workgroupSize=$(make_even $(random_between 1 $workgroupSizeLimiter))
+  echo "Threadblock size: $workgroupSize"
   echo "workgroupSize=$workgroupSize" >> $PARAM_FILE
   echo "shufflePct=$(random_between 0 100)" >> $PARAM_FILE
   echo "barrierPct=$(random_between 0 100)" >> $PARAM_FILE
