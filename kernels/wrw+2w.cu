@@ -62,7 +62,7 @@ __global__ void litmus_test(
       test_locations[y_1].store(1, thread_1_store);
 
       // Thread 2
-      test_locations[y_2].store(1, cuda::memory_order_relaxed);
+      test_locations[y_2].store(2, cuda::memory_order_relaxed);
       test_locations[x_2].store(1, thread_2_store);
 
       cuda::atomic_thread_fence(cuda::memory_order_seq_cst);
