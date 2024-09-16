@@ -46,18 +46,27 @@ typedef struct {
 } ReadResults;
 
 typedef struct {
-  cuda::atomic<uint, cuda::thread_scope_device> seq0;
-  cuda::atomic<uint, cuda::thread_scope_device>  seq1;
-  cuda::atomic<uint, cuda::thread_scope_device>  seq2;
-  cuda::atomic<uint, cuda::thread_scope_device>  seq3;
-  cuda::atomic<uint, cuda::thread_scope_device>  seq_inter0;
-  cuda::atomic<uint, cuda::thread_scope_device>  seq_inter1;
-  cuda::atomic<uint, cuda::thread_scope_device> interleaved0;
-  cuda::atomic<uint, cuda::thread_scope_device> interleaved1;
-  cuda::atomic<uint, cuda::thread_scope_device> interleaved2;
-  cuda::atomic<uint, cuda::thread_scope_device> weak;
-  cuda::atomic<uint, cuda::thread_scope_device> other;
+  cuda::atomic<uint, cuda::thread_scope_device> res0; // up to 16 combinations of valid test results in the implemented tests
+  cuda::atomic<uint, cuda::thread_scope_device> res1;
+  cuda::atomic<uint, cuda::thread_scope_device> res2;
+  cuda::atomic<uint, cuda::thread_scope_device> res3;
+  cuda::atomic<uint, cuda::thread_scope_device> res4;
+  cuda::atomic<uint, cuda::thread_scope_device> res5;
+  cuda::atomic<uint, cuda::thread_scope_device> res6;
+  cuda::atomic<uint, cuda::thread_scope_device> res7;
+  cuda::atomic<uint, cuda::thread_scope_device> res8;
+  cuda::atomic<uint, cuda::thread_scope_device> res9;
+  cuda::atomic<uint, cuda::thread_scope_device> res10;
+  cuda::atomic<uint, cuda::thread_scope_device> res11;
+  cuda::atomic<uint, cuda::thread_scope_device> res12;
+  cuda::atomic<uint, cuda::thread_scope_device> res13;
+  cuda::atomic<uint, cuda::thread_scope_device> res14;
+  cuda::atomic<uint, cuda::thread_scope_device> res15;
+  cuda::atomic<uint, cuda::thread_scope_device> weak; // this is the weak behavior we are looking for
+  cuda::atomic<uint, cuda::thread_scope_device> na; // some threads don't execute the test if thread ids clash
+  cuda::atomic<uint, cuda::thread_scope_device> other; // this should always be 0
 } TestResults;
+
 
 typedef struct {
   bool barrier;

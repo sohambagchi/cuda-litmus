@@ -90,31 +90,31 @@ __global__ void check_results(
     uint r3 = read_results[id_0].r3;
 
     if (r0 == 0 && r1 == 0 && r2 == 0 && r3 == 0) { // both observers run first
-      test_results->seq0.fetch_add(1);
+      test_results->res0.fetch_add(1);
     }
     else if (r0 == 1 && r1 == 1 && r2 == 1 && r3 == 1) { // both observers run last
-      test_results->seq1.fetch_add(1);
+      test_results->res1.fetch_add(1);
     }
     else if (r0 == 0 && r1 == 0 && r2 == 1 && r3 == 1) { // first observer runs first
-      test_results->seq2.fetch_add(1);
+      test_results->res2.fetch_add(1);
     }
     else if (r0 == 1 && r1 == 1 && r2 == 0 && r3 == 0) { // second observer runs first
-      test_results->seq3.fetch_add(1);
+      test_results->res3.fetch_add(1);
     }
     else if (r0 == r1 && r2 != r3) { // second observer interleaved
-      test_results->seq_inter0.fetch_add(1);
+      test_results->res4.fetch_add(1);
     }
     else if (r0 != r1 && r2 == r3) { // first observer interleaved
-      test_results->seq_inter1.fetch_add(1);
+      test_results->res5.fetch_add(1);
     }
     else if (r0 == 0 && r1 == 1 && r2 == 0 && r3 == 1) { // both interleaved
-      test_results->interleaved0.fetch_add(1);
+      test_results->res6.fetch_add(1);
     }
     else if (r0 == 0 && r1 == 1 && r2 == 1 && r3 == 0) { // both interleaved
-      test_results->interleaved1.fetch_add(1);
+      test_results->res7.fetch_add(1);
     }
     else if (r0 == 1 && r1 == 0 && r2 == 0 && r3 == 1) { // both interleaved
-      test_results->interleaved2.fetch_add(1);
+      test_results->res8.fetch_add(1);
     }
     else if (r0 == 1 && r1 == 0 && r2 == 1 && r3 == 0) { // observer threads see x/y in different orders
       test_results->weak.fetch_add(1);
@@ -127,15 +127,15 @@ __global__ void check_results(
 
 int host_check_results(TestResults* results, bool print) {
   if (print) {
-    std::cout << "r0=0, r1=0, r2=0, r3=0 (seq): " << results->seq0 << "\n";
-    std::cout << "r0=1, r1=1, r2=1, r3=1 (seq): " << results->seq1 << "\n";
-    std::cout << "r0=0, r1=0, r2=1, r3=1 (seq): " << results->seq2 << "\n";
-    std::cout << "r0=1, r1=1, r2=0, r3=0 (seq): " << results->seq3 << "\n";
-    std::cout << "r0 == r1, r2 != r3 (seq/interleaved): " << results->seq_inter0 << "\n";
-    std::cout << "r0 != r1, r2 == r3 (interleaved/seq): " << results->seq_inter1 << "\n";
-    std::cout << "r0=0, r1=1, r2=0, r3=1 (interleaved): " << results->interleaved0 << "\n";
-    std::cout << "r0=0, r1=1, r2=1, r3=0 (interleaved): " << results->interleaved1 << "\n";
-    std::cout << "r0=1, r1=0, r2=0, r3=1 (interleaved): " << results->interleaved2 << "\n";
+    std::cout << "r0=0, r1=0, r2=0, r3=0 (seq): " << results->res0 << "\n";
+    std::cout << "r0=1, r1=1, r2=1, r3=1 (seq): " << results->res1 << "\n";
+    std::cout << "r0=0, r1=0, r2=1, r3=1 (seq): " << results->res2 << "\n";
+    std::cout << "r0=1, r1=1, r2=0, r3=0 (seq): " << results->res3 << "\n";
+    std::cout << "r0 == r1, r2 != r3 (seq/interleaved): " << results->res4 << "\n";
+    std::cout << "r0 != r1, r2 == r3 (interleaved/seq): " << results->res5 << "\n";
+    std::cout << "r0=0, r1=1, r2=0, r3=1 (interleaved): " << results->res6 << "\n";
+    std::cout << "r0=0, r1=1, r2=1, r3=0 (interleaved): " << results->res7 << "\n";
+    std::cout << "r0=1, r1=0, r2=0, r3=1 (interleaved): " << results->res8 << "\n";
     std::cout << "r0=1, r1=0, r2=1, r3=0 (weak): " << results->weak << "\n";
     std::cout << "other: " << results->other << "\n";
   }

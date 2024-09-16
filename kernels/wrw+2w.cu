@@ -82,14 +82,50 @@ __global__ void check_results(
   uint id_0 = blockIdx.x * blockDim.x + threadIdx.x;
   uint r0 = read_results[id_0].r0;
   uint x = test_locations[id_0 * kernel_params->mem_stride * 2];
-  uint y_loc = (wg_offset + permute_id(id_1, kernel_params->permute_location, total_ids)) * kernel_params->mem_stride * 2 + kernel_params->mem_offset;
+  uint y_loc = (wg_offset + permute_id(id_0, kernel_params->permute_location, total_ids)) * kernel_params->mem_stride * 2 + kernel_params->mem_offset;
   uint y = test_locations[y_loc];
 
-  if (r0 == 2 && x == 2 && y == 2) { // this is the non-mca weak behavior
+  if (r0 == 0 && x == 1 && y == 1) { 
+    test_results->res0.fetch_add(1);
+  }
+  else if (r0 == 0 && x == 1 && y == 2) { 
+    test_results->res1.fetch_add(1);
+  }
+  else if (r0 == 0 && x == 2 && y == 1) { 
+    test_results->res2.fetch_add(1);
+  }
+  else if (r0 == 0 && x == 2 && y == 2) { 
+    test_results->res3.fetch_add(1);
+  }
+
+  else if (r0 == 1 && x == 1 && y == 1) { 
+    test_results->res4.fetch_add(1);
+  }
+  else if (r0 == 1 && x == 1 && y == 2) { 
+    test_results->res5.fetch_add(1);
+  }
+  else if (r0 == 1 && x == 2 && y == 1) { 
+    test_results->res6.fetch_add(1);
+  }
+  else if (r0 == 1 && x == 2 && y == 2) { 
+    test_results->res7.fetch_add(1);
+  }
+
+  else if (r0 == 2 && x == 1 && y == 1) { 
+    test_results->res8.fetch_add(1);
+  }
+  else if (r0 == 2 && x == 1 && y == 2) { 
+    test_results->res9.fetch_add(1);
+  }
+  else if (r0 == 2 && x == 2 && y == 1) { 
+    test_results->res10.fetch_add(1);
+  }
+  else if (r0 == 2 && x == 2 && y == 2) { // this is the non-mca weak behavior
     test_results->weak.fetch_add(1);
-  } 
-  else if (r0 <= 2 && x <= 2 && y <= 2) { // catch all for other valid behaviors
-    test_results->seq0.fetch_add(1);
+  }
+
+  else if (x == 0 && y == 0) {
+    test_results->na.fetch_add(1);
   }
   else {
     test_results->other.fetch_add(1);
@@ -98,8 +134,19 @@ __global__ void check_results(
 
 int host_check_results(TestResults* results, bool print) {
   if (print) {
-    std::cout << "r0 <= 2, x <= 2, y <= 2: " << results->seq0 << "\n";
+    std::cout << "r0=0, x=1, y=1: " << results->res0 << "\n";
+    std::cout << "r0=0, x=1, y=2: " << results->res1 << "\n";
+    std::cout << "r0=0, x=2, y=1: " << results->res2 << "\n";
+    std::cout << "r0=0, x=2, y=2: " << results->res3 << "\n";
+    std::cout << "r0=1, x=1, y=1: " << results->res4 << "\n";
+    std::cout << "r0=1, x=1, y=2: " << results->res5 << "\n";
+    std::cout << "r0=1, x=2, y=1: " << results->res6 << "\n";
+    std::cout << "r0=0, x=2, y=2: " << results->res7 << "\n";
+    std::cout << "r0=2, x=1, y=1: " << results->res8 << "\n";
+    std::cout << "r0=2, x=1, y=2: " << results->res9 << "\n";
+    std::cout << "r0=2, x=2, y=1: " << results->res10 << "\n";
     std::cout << "r0=2, x=2, y=2 (weak): " << results->weak << "\n";
+    std::cout << "thread skipped: " << results->na << "\n";
     std::cout << "other: " << results->other << "\n";
   }
   return results->weak;

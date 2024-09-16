@@ -67,7 +67,7 @@ __global__ void litmus_test(
       spin(barrier, blockDim.x * kernel_params->testing_workgroups);
     }
 
-    if (id_1 != id_2) {
+    if (id_0 != id_1 && id_1 != id_2) {
 
       // Thread 0
       test_locations[x_0].store(1, cuda::memory_order_relaxed);
@@ -103,19 +103,19 @@ __global__ void check_results(
   uint r2 = read_results[id_0].r2;
 
   if (r0 == 1 && r1 == 1 && r2 == 1) {
-    test_results->seq0.fetch_add(1);
+    test_results->res0.fetch_add(1);
   }
   else if (r0 == 0 && r1 == 0 && r2 == 0) {
-    test_results->seq1.fetch_add(1);
+    test_results->res1.fetch_add(1);
   }
   else if (r0 == 0 && r1 == 0 && r2 == 1) {
-    test_results->seq2.fetch_add(1);
+    test_results->res2.fetch_add(1);
   }
   else if (r0 == 1 && r1 == 0 && r2 == 0) {
-    test_results->seq3.fetch_add(1);
+    test_results->res3.fetch_add(1);
   }
   else if (r0 == 1 && r1 == 0 && r2 == 1) {
-    test_results->interleaved0.fetch_add(1);
+    test_results->res4.fetch_add(1);
   }
   else if (r0 == 1 && r1 == 1 && r2 == 0) {
     test_results->weak.fetch_add(1);
@@ -127,11 +127,11 @@ __global__ void check_results(
 
 int host_check_results(TestResults* results, bool print) {
   if (print) {
-    std::cout << "r0=0, r1=1, r2=1 (seq): " << results->seq0 << "\n";
-    std::cout << "r0=0, r1=0, r2=0 (seq): " << results->seq1 << "\n";
-    std::cout << "r0=0, r1=0, r2=1 (seq): " << results->seq2 << "\n";
-    std::cout << "r0=1, r1=0, r2=0 (seq): " << results->seq3 << "\n";
-    std::cout << "r0=1, r1=0, r2=1 (interleaved): " << results->interleaved0 << "\n";
+    std::cout << "r0=0, r1=1, r2=1 (seq): " << results->res0 << "\n";
+    std::cout << "r0=0, r1=0, r2=0 (seq): " << results->res1 << "\n";
+    std::cout << "r0=0, r1=0, r2=1 (seq): " << results->res2 << "\n";
+    std::cout << "r0=1, r1=0, r2=0 (seq): " << results->res3 << "\n";
+    std::cout << "r0=1, r1=0, r2=1 (interleaved): " << results->res4 << "\n";
     std::cout << "r0=1, r1=1, r2=0 (weak): " << results->weak << "\n";
     std::cout << "other: " << results->other << "\n";
 

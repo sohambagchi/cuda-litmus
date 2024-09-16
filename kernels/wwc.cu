@@ -98,17 +98,17 @@ __global__ void check_results(
   uint r1 = read_results[id_0].r1;
   uint x = test_locations[id_0 * kernel_params->mem_stride * 2];
 
-  if (r0 == 1 && r1 == 1 && x == 1) {
-    test_results->seq_inter1.fetch_add(1); // this is actually a load buffer weak behavior
-  }
-  else if (r0 == 1 && r1 == 1 && x == 2) { // also load buffer weak behavior
-    test_results->seq_inter1.fetch_add(1);
+  if (r0 == 1 && r1 == 1) {
+    test_results->res0.fetch_add(1); // this is actually a load buffer weak behavior
   }
   else if (r0 == 2 && r1 == 1 && x == 2) { // this is the non-mca weak behavior
     test_results->weak.fetch_add(1);
   } 
-  else if (r0 <= 2 && r1 <= 1 && (x <= 2)) { // catch all for other sequential/interleaved behaviors
-    test_results->seq0.fetch_add(1);
+  else if (r0 <= 2 && r1 <= 1 && (x == 2 || x == 1)) { // catch all for other sequential/interleaved behaviors
+    test_results->res1.fetch_add(1);
+  }
+  else if (x == 0) { // thread skipped
+    test_results->na.fetch_add(1);
   }
   else {
     test_results->other.fetch_add(1);
@@ -117,8 +117,10 @@ __global__ void check_results(
 
 int host_check_results(TestResults* results, bool print) {
   if (print) {
-    std::cout << "r0 <= 2, r1 <= 1, x <= 2 (seq/interleaved): " << results->seq0 << "\n";
-    std::cout << "r0=1, r1=1, x = (1 || 2) (lb weak): " << results->seq_inter1 << "\n";
+    std::cout << "r0 <= 2, r1 <= 1, x <= 2 (seq/interleaved): " << results->res1 << "\n";
+    std::cout << "r0=1, r1=1, x = (1 || 2) (lb weak): " << results->res0 << "\n";
+    std::cout << "thread skipped: " << results->na << "\n";
+
     std::cout << "r0=2, r1=1, x=2 (weak): " << results->weak << "\n";
     std::cout << "other: " << results->other << "\n";
   }
