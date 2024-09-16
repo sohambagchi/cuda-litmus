@@ -107,7 +107,7 @@ __global__ void check_results(
   else if (r0 == 2 && r1 == 1 && x == 2) { // this is the non-mca weak behavior
     test_results->weak.fetch_add(1);
   } 
-  else if (r0 <= 2 && r1 <= 1 && (x == 1 || x == 2)) { // catch all for other sequential/interleaved behaviors
+  else if (r0 <= 2 && r1 <= 1 && (x <= 2)) { // catch all for other sequential/interleaved behaviors
     test_results->seq0.fetch_add(1);
   }
   else {

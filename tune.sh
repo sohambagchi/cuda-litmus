@@ -57,11 +57,12 @@ function random_config() {
 }
 
 function run_test() {
-  local tb=$1
-  local scope=$2
-  local variant=$3
-  local test=$4
-  res=$(./$TARGET_DIR/$test-$tb-$scope-$variant-runner -s $PARAM_FILE -t $PARAMS_DIR/"$test.txt")
+  local test=$1
+  local tb=$2
+  local scope=$3
+  local variant=$4
+  local params=$5
+  res=$(./$TARGET_DIR/$test-$tb-$scope-$variant-runner -s $PARAM_FILE -t $PARAMS_DIR/$params)
   local weak_behaviors=$(echo "$res" | tail -n 1 | sed 's/.*of weak behaviors: \(.*\)$/\1/')
   local weak_pct=$(echo "$res" | tail -n 2 | head -n 1 | sed 's/.*percentage: \(.*\)$/\1/')
   local weak_rate=$(echo "$res" | tail -n 3 | head -n 1 | sed 's/.*rate: \(.*\) per second/\1/')
@@ -102,10 +103,12 @@ tuning_file=$1
 readarray test_files < $tuning_file
 
 for test_file in "${test_files[@]}"; do
-  read -a test <<< "$(sed -n '1p' $test_file)"
+  read -a test_info <<< "$(sed -n '1p' $test_file)"
   read -a threadblocks <<< "$(sed -n '2p' $test_file)"
   read -a scopes <<< "$(sed -n '3p' $test_file)"
   read -a variants <<< "$(sed -n '4p' $test_file)"
+
+  test="${test_info[0]}"
 
   # build binaries
   for tb in ${threadblocks[@]}; do
@@ -125,15 +128,20 @@ do
   echo "Iteration: $iter"
   random_config 1024 256
   for test_file in "${test_files[@]}"; do
-    read -a test <<< "$(sed -n '1p' $test_file)"
+    read -a test_info <<< "$(sed -n '1p' $test_file)"
     read -a threadblocks <<< "$(sed -n '2p' $test_file)"
     read -a scopes <<< "$(sed -n '3p' $test_file)"
     read -a variants <<< "$(sed -n '4p' $test_file)"
 
+    test="${test_info[0]}"
+    params="${test_info[1]}"
+
+    echo $params
+
     for tb in ${threadblocks[@]}; do
       for scope in ${scopes[@]}; do
         for variant in ${variants[@]}; do
-          run_test $tb $scope $variant $test
+          run_test $test $tb $scope $variant $params
         done
       done
     done

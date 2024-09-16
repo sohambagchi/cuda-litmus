@@ -1,4 +1,0 @@
-numMemLocations=2
-permuteLocation=1031
-aliasedMemory=0
-workgroupMemory=0
