@@ -26,35 +26,21 @@ __global__ void litmus_test(
   uint shuffled_workgroup = shuffled_workgroups[blockIdx.x];
   if (shuffled_workgroup < kernel_params->testing_workgroups) {
 
-#ifdef ACQ_REL
+#ifdef ACQ
     cuda::memory_order thread_1_load = cuda::memory_order_acquire;
     cuda::memory_order thread_1_store = cuda::memory_order_relaxed;
-    cuda::memory_order thread_2_load = cuda::memory_order_relaxed;
     cuda::memory_order thread_2_store = cuda::memory_order_release;
-#elif defined(ACQ_ACQ)
-    cuda::memory_order thread_1_load = cuda::memory_order_acquire;
-    cuda::memory_order thread_1_store = cuda::memory_order_relaxed;
-    cuda::memory_order thread_2_load = cuda::memory_order_acquire;
-    cuda::memory_order thread_2_store = cuda::memory_order_relaxed;
-#elif defined(REL_ACQ)
+#elif defined(REL)
     cuda::memory_order thread_1_load = cuda::memory_order_relaxed;
     cuda::memory_order thread_1_store = cuda::memory_order_release;
-    cuda::memory_order thread_2_load = cuda::memory_order_acquire;
-    cuda::memory_order thread_2_store = cuda::memory_order_relaxed;
-#elif defined(REL_REL)
-    cuda::memory_order thread_1_load = cuda::memory_order_relaxed;
-    cuda::memory_order thread_1_store = cuda::memory_order_release;
-    cuda::memory_order thread_2_load = cuda::memory_order_relaxed;
     cuda::memory_order thread_2_store = cuda::memory_order_release;
 #elif defined(RELAXED)
     cuda::memory_order thread_1_load = cuda::memory_order_relaxed;
     cuda::memory_order thread_1_store = cuda::memory_order_relaxed;
-    cuda::memory_order thread_2_load = cuda::memory_order_relaxed;
     cuda::memory_order thread_2_store = cuda::memory_order_relaxed;
 #else
     cuda::memory_order thread_1_load = cuda::memory_order_relaxed; // default to all relaxed
     cuda::memory_order thread_1_store = cuda::memory_order_relaxed;
-    cuda::memory_order thread_2_load = cuda::memory_order_relaxed;
     cuda::memory_order thread_2_store = cuda::memory_order_relaxed;
 #endif
 
@@ -76,12 +62,11 @@ __global__ void litmus_test(
       test_locations[y_1].store(1, thread_1_store);
 
       // Thread 2
-      uint r1 = test_locations[y_2].load(thread_2_load);
+      test_locations[y_2].store(1, cuda::memory_order_relaxed);
       test_locations[x_2].store(1, thread_2_store);
 
       cuda::atomic_thread_fence(cuda::memory_order_seq_cst);
       read_results[wg_offset + id_1].r0 = r0;
-      read_results[wg_offset + id_2].r1 = r1;
     }
   }
 
@@ -93,21 +78,17 @@ __global__ void check_results(
   ReadResults* read_results,
   TestResults* test_results,
   KernelParams* kernel_params) {
+  RESULT_IDS();
   uint id_0 = blockIdx.x * blockDim.x + threadIdx.x;
   uint r0 = read_results[id_0].r0;
-  uint r1 = read_results[id_0].r1;
   uint x = test_locations[id_0 * kernel_params->mem_stride * 2];
+  uint y_loc = (wg_offset + permute_id(id_1, kernel_params->permute_location, total_ids)) * kernel_params->mem_stride * 2 + kernel_params->mem_offset;
+  uint y = test_locations[y_loc];
 
-  if (r0 == 1 && r1 == 1 && x == 1) {
-    test_results->seq_inter1.fetch_add(1); // this is actually a load buffer weak behavior
-  }
-  else if (r0 == 1 && r1 == 1 && x == 2) { // also load buffer weak behavior
-    test_results->seq_inter1.fetch_add(1);
-  }
-  else if (r0 == 2 && r1 == 1 && x == 2) { // this is the non-mca weak behavior
+  if (r0 == 2 && x == 2 && y == 2) { // this is the non-mca weak behavior
     test_results->weak.fetch_add(1);
   } 
-  else if (r0 <= 2 && r1 <= 1 && (x <= 2)) { // catch all for other sequential/interleaved behaviors
+  else if (r0 <= 2 && x <= 2 && y <= 2) { // catch all for other valid behaviors
     test_results->seq0.fetch_add(1);
   }
   else {
@@ -117,9 +98,8 @@ __global__ void check_results(
 
 int host_check_results(TestResults* results, bool print) {
   if (print) {
-    std::cout << "r0 <= 2, r1 <= 1, x = (1 || 2) (seq/interleaved): " << results->seq0 << "\n";
-    std::cout << "r0=1, r1=1, x = (1 || 2) (lb weak): " << results->seq_inter1 << "\n";
-    std::cout << "r0=2, r1=1, x=2 (weak): " << results->weak << "\n";
+    std::cout << "r0 <= 2, x <= 2, y <= 2: " << results->seq0 << "\n";
+    std::cout << "r0=2, x=2, y=2 (weak): " << results->weak << "\n";
     std::cout << "other: " << results->other << "\n";
   }
   return results->weak;

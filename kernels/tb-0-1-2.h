@@ -6,3 +6,7 @@
   uint third_workgroup = stripe_workgroup(new_workgroup, threadIdx.x, kernel_params->testing_workgroups); \
   uint id_2 = third_workgroup * blockDim.x + threadIdx.x; \
   uint wg_offset = 0;
+
+#define RESULT_IDS() \
+  uint total_ids = blockDim.x * kernel_params->testing_workgroups; \
+  uint wg_offset = 0;
