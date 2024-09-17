@@ -83,7 +83,7 @@ __global__ void check_results(
     uint r3 = read_results[id_0].r3;
 
     if (x == 0) {
-      test_results->na.fetch_add(1) // thread skipped
+      test_results->na.fetch_add(1); // thread skipped
     }
     else if (r0 == 0 && r1 == 0 && r2 == 0 && r3 == 0) { // both observers run first
       test_results->res0.fetch_add(1);

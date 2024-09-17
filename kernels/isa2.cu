@@ -101,10 +101,10 @@ __global__ void check_results(
   uint r0 = read_results[id_0].r0;
   uint r1 = read_results[id_0].r1;
   uint r2 = read_results[id_0].r2;
-  uint x = test_locations[id_0 * kernel_params->mem_stride * 2];
+  uint x = test_locations[id_0 * kernel_params->mem_stride * 3];
 
   if (x == 0) {
-    test_results->na.fetch_add(1) // thread skipped
+    test_results->na.fetch_add(1); // thread skipped
   }
   else if (r0 == 1 && r1 == 1 && r2 == 1) {
     test_results->res0.fetch_add(1);
@@ -115,11 +115,18 @@ __global__ void check_results(
   else if (r0 == 0 && r1 == 0 && r2 == 1) {
     test_results->res2.fetch_add(1);
   }
-  else if (r0 == 1 && r1 == 0 && r2 == 0) {
+  else if (r0 == 0 && r1 == 1 && r2 == 0) {
     test_results->res3.fetch_add(1);
   }
-  else if (r0 == 1 && r1 == 0 && r2 == 1) {
+  else if (r0 == 0 && r1 == 1 && r2 == 1) {
     test_results->res4.fetch_add(1);
+  }
+
+  else if (r0 == 1 && r1 == 0 && r2 == 0) {
+    test_results->res5.fetch_add(1);
+  }
+  else if (r0 == 1 && r1 == 0 && r2 == 1) {
+    test_results->res6.fetch_add(1);
   }
   else if (r0 == 1 && r1 == 1 && r2 == 0) {
     test_results->weak.fetch_add(1);
@@ -134,8 +141,10 @@ int host_check_results(TestResults* results, bool print) {
     std::cout << "r0=0, r1=1, r2=1 (seq): " << results->res0 << "\n";
     std::cout << "r0=0, r1=0, r2=0 (seq): " << results->res1 << "\n";
     std::cout << "r0=0, r1=0, r2=1 (seq): " << results->res2 << "\n";
-    std::cout << "r0=1, r1=0, r2=0 (seq): " << results->res3 << "\n";
-    std::cout << "r0=1, r1=0, r2=1 (interleaved): " << results->res4 << "\n";
+    std::cout << "r0=0, r1=1, r2=0: " << results->res3 << "\n";
+    std::cout << "r0=0, r1=1, r2=1: " << results->res4 << "\n";
+    std::cout << "r0=1, r1=0, r2=0 (seq): " << results->res5 << "\n";
+    std::cout << "r0=1, r1=0, r2=1 (interleaved): " << results->res6 << "\n";
     std::cout << "r0=1, r1=1, r2=0 (weak): " << results->weak << "\n";
     std::cout << "thread skipped: " << results->na << "\n";
     std::cout << "other: " << results->other << "\n";
