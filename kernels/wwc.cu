@@ -119,9 +119,8 @@ int host_check_results(TestResults* results, bool print) {
   if (print) {
     std::cout << "r0 <= 2, r1 <= 1, x <= 2 (seq/interleaved): " << results->res1 << "\n";
     std::cout << "r0=1, r1=1, x = (1 || 2) (lb weak): " << results->res0 << "\n";
-    std::cout << "thread skipped: " << results->na << "\n";
-
     std::cout << "r0=2, r1=1, x=2 (weak): " << results->weak << "\n";
+    std::cout << "thread skipped: " << results->na << "\n";
     std::cout << "other: " << results->other << "\n";
   }
   return results->weak;

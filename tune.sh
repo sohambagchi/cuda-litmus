@@ -64,10 +64,10 @@ function run_test() {
   local params=$5
   res=$(./$TARGET_DIR/$test-$tb-$scope-$variant-runner -s $PARAM_FILE -t $PARAMS_DIR/$params)
   local weak_behaviors=$(echo "$res" | tail -n 1 | sed 's/.*of weak behaviors: \(.*\)$/\1/')
-  local weak_pct=$(echo "$res" | tail -n 2 | head -n 1 | sed 's/.*percentage: \(.*\)$/\1/')
+  local total_behaviors=$(echo "$res" | tail -n 2 | head -n 1 | sed 's/.*Total behaviors: \(.*\)$/\1/')
   local weak_rate=$(echo "$res" | tail -n 3 | head -n 1 | sed 's/.*rate: \(.*\) per second/\1/')
 
-  echo "  Test $test-$tb-$scope-$variant weak behaviors: $weak_behaviors, $weak_pct, rate: $weak_rate per second"
+  echo "  Test $test-$tb-$scope-$variant weak: $weak_behaviors, total: $total_behaviors, rate: $weak_rate per second"
 
   if (( $(echo "$weak_rate > 0" | bc -l) )); then
     local test_result_dir="$RESULT_DIR/$test-$tb-$scope-$variant"

@@ -187,6 +187,15 @@ void setStaticKernelParams(KernelParams* h_kernelParams, StressParams stressPara
   }
 }
 
+int total_behaviors(TestResults * results) {
+  return results->res0 + results->res1 + results->res2 + results->res3 + 
+  results->res4 + results->res5 + results->res6 + results->res7 + 
+  results->res8 + results->res9 + results->res10 + results->res11 + 
+  results->res12 + results->res13 + results->res14 + results->res15 + 
+  results->weak;
+}
+
+
 void run(StressParams stressParams, TestParams testParams, bool print_results) {
   int testingThreads = stressParams.workgroupSize * stressParams.testingWorkgroups;
 
@@ -229,6 +238,7 @@ void run(StressParams stressParams, TestParams testParams, bool print_results) {
   std::chrono::time_point<std::chrono::system_clock> start, end;
   start = std::chrono::system_clock::now();
   int weakBehaviors = 0;
+  int totalBehaviors = 0;
 
   for (int i = 0; i < stressParams.testIterations; i++) {
     int numWorkgroups = setBetween(stressParams.testingWorkgroups, stressParams.maxWorkgroups);
@@ -256,6 +266,7 @@ void run(StressParams stressParams, TestParams testParams, bool print_results) {
       std::cout << "Iteration " << i << "\n";
     }
     weakBehaviors += host_check_results(h_testResults, print_results);
+    totalBehaviors += total_behaviors(h_testResults);
   }
 
   end = std::chrono::high_resolution_clock::now();
@@ -263,9 +274,7 @@ void run(StressParams stressParams, TestParams testParams, bool print_results) {
   std::cout << "Time taken: " << duration.count() << " seconds" << std::endl;
   std::cout << std::fixed << std::setprecision(0) << "Weak behavior rate: " << float(weakBehaviors) / duration.count() << " per second\n";
 
-  int totalBehaviors = stressParams.testingWorkgroups * stressParams.workgroupSize * stressParams.testIterations;
-
-  std::cout << "Weak behavior percentage: " << float(weakBehaviors) / float(totalBehaviors) * 100 << "%\n";
+  std::cout << "Total behaviors: " << totalBehaviors << "\n";
   std::cout << "Number of weak behaviors: " << weakBehaviors << "\n";
 
   // Free memory
