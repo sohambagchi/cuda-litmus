@@ -48,6 +48,7 @@ def analyze(file_path):
 
   # Convert dictionary to a pandas DataFrame for better visualization
   df_results = pd.DataFrame.from_dict(test_results, orient='index')
+  print(f"Total tests: {len(test_results) - 1}")
   print(df_results)
   print(f"Unexpected non-weak tests: {unexpected_non_weak}")
   print(f"Unexpected weak tests: {unexpected_weak}")
