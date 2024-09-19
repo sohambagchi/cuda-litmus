@@ -25,10 +25,22 @@ __global__ void litmus_test(
 
 #ifdef ACQUIRE
     cuda::memory_order first_mem_order = cuda::memory_order_acquire;
+    #define FENCE()
+#elif defined(ACQ_FENCE_BLOCK)
+    cuda::memory_order first_mem_order = cuda::memory_order_relaxed;
+    #define FENCE() cuda::atomic_thread_fence(cuda::memory_order_acq_rel, cuda::thread_scope_block);
+#elif defined(ACQ_FENCE_DEVICE)
+    cuda::memory_order first_mem_order = cuda::memory_order_relaxed;
+    #define FENCE() cuda::atomic_thread_fence(cuda::memory_order_acq_rel, cuda::thread_scope_device);
+#elif defined(ACQ_FENCE_SYSTEM)
+    cuda::memory_order first_mem_order = cuda::memory_order_relaxed;
+    #define FENCE() cuda::atomic_thread_fence(cuda::memory_order_acq_rel, cuda::thread_scope_system);
 #elif defined(RELAXED)
     cuda::memory_order first_mem_order = cuda::memory_order_relaxed;
+    #define FENCE()
 #else
     cuda::memory_order first_mem_order = cuda::memory_order_relaxed; // default to relaxed
+    #define FENCE()
 #endif
 
     // defined for different distributions of threads across threadblocks
@@ -52,6 +64,7 @@ __global__ void litmus_test(
 
       if (id_1_first_half) { // one observer thread reads x then y
         uint r0 = test_locations[x_1].load(first_mem_order);
+        FENCE()
         uint r1 = test_locations[y_1].load(cuda::memory_order_relaxed);
         cuda::atomic_thread_fence(cuda::memory_order_seq_cst);
         read_results[wg_offset + id_1_final].r0 = r0;
@@ -59,6 +72,7 @@ __global__ void litmus_test(
       }
       else { // other observer thread reads y then x
         uint r2 = test_locations[y_1].load(first_mem_order);
+        FENCE()
         uint r3 = test_locations[x_1].load(cuda::memory_order_relaxed);
         cuda::atomic_thread_fence(cuda::memory_order_seq_cst);
         read_results[wg_offset + id_1_final].r2 = r2;
