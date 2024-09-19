@@ -5,7 +5,9 @@ def analyze(file_path):
   # Initialize the dictionary to store test results
   test_results = {}
 
+  total_expected_weak = 0
   unexpected_non_weak = set()
+  total_expected_non_weak = 0
   unexpected_weak = set()
 
   test_results["all"] = {"weak": 0, "total": 0}
@@ -22,7 +24,10 @@ def analyze(file_path):
       # Tests that are block scoped or relaxed can see valid weak behaviors
       # We set it to all of these first and remove them as we see weak behaviors
       if "SCOPE_BLOCK" in test_name or "RELAXED" in test_name:
+        total_expected_weak += 1
         unexpected_non_weak.add(test_name)
+      else:
+        total_expected_non_weak += 1
       if test_name not in test_results:
         test_results[test_name] = {"weak": 0, "total": 0}
     # Identify the iteration results and update the dictionary
@@ -50,7 +55,9 @@ def analyze(file_path):
   df_results = pd.DataFrame.from_dict(test_results, orient='index')
   print(f"Total tests: {len(test_results) - 1}")
   print(df_results)
+  print(f"Total expected weak tests: {total_expected_weak}")
   print(f"Unexpected non-weak tests: {unexpected_non_weak}")
+  print(f"Total expected non-weak tests: {total_expected_non_weak}")
   print(f"Unexpected weak tests: {unexpected_weak}")
 
 def main():
