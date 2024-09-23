@@ -58,14 +58,15 @@ function run_test() {
   local test=$1
   local tb=$2
   local scope=$3
-  local variant=$4
-  local params=$5
-  res=$(./$TARGET_DIR/$test-$tb-$scope-$variant-runner -s $PARAM_FILE -t $PARAMS_DIR/$params)
+  local fence_scope=$4
+  local variant=$5
+  local params=$6
+  res=$(./$TARGET_DIR/$test-$tb-$scope-$fence_scope-$variant-runner -s $PARAM_FILE -t $PARAMS_DIR/$params)
   local weak_behaviors=$(echo "$res" | tail -n 1 | sed 's/.*of weak behaviors: \(.*\)$/\1/')
   local total_behaviors=$(echo "$res" | tail -n 2 | head -n 1 | sed 's/.*Total behaviors: \(.*\)$/\1/')
   local weak_rate=$(echo "$res" | tail -n 3 | head -n 1 | sed 's/.*rate: \(.*\) per second/\1/')
 
-  echo "  Test $test-$tb-$scope-$variant weak: $weak_behaviors, total: $total_behaviors, rate: $weak_rate per second"
+  echo "  Test $test-$tb-$scope-$fence_scope-$variant weak: $weak_behaviors, total: $total_behaviors, rate: $weak_rate per second"
 
   if (( $(echo "$weak_rate > 0" | bc -l) )); then
     local test_result_dir="$RESULT_DIR/$test-$tb-$scope-$variant"
@@ -105,6 +106,8 @@ for test_file in "${test_files[@]}"; do
   read -a threadblocks <<< "$(sed -n '2p' $test_file)"
   read -a scopes <<< "$(sed -n '3p' $test_file)"
   read -a variants <<< "$(sed -n '4p' $test_file)"
+  read -a fence_scopes <<< "$(sed -n '5p' $test_file)"
+  read -a fence_variants <<< "$(sed -n '6p' $test_file)"
 
   test="${test_info[0]}"
 
@@ -113,7 +116,13 @@ for test_file in "${test_files[@]}"; do
     for scope in ${scopes[@]}; do
       for variant in ${variants[@]}; do
         echo "Compiling $test-$tb-$scope-$variant runner"
-  	  nvcc -D$tb -D$scope -D$variant -I. -rdc=true -arch sm_80 runner.cu functions.cu "kernels/$test.cu" -o "$TARGET_DIR/$test-$tb-$scope-$variant-runner"
+  	    nvcc -D$tb -D$scope -D$variant -I. -rdc=true -arch sm_80 runner.cu functions.cu "kernels/$test.cu" -o "$TARGET_DIR/$test-$tb-$scope-NO_FENCE-$variant-runner"
+      done
+      for f_scope in ${fence_scopes[@]}; do
+        for f_variant in ${fence_variants[@]}; do
+          echo "Compiling $test-$tb-$scope-$f_scope-$f_variant runner"
+  	      nvcc -D$tb -D$scope -D$f_scope -D$f_variant -I. -rdc=true -arch sm_80 runner.cu functions.cu "kernels/$test.cu" -o "$TARGET_DIR/$test-$tb-$scope-$f_scope-$f_variant-runner"
+        done
       done
     done
   done
@@ -137,8 +146,14 @@ do
     for tb in ${threadblocks[@]}; do
       for scope in ${scopes[@]}; do
         for variant in ${variants[@]}; do
-          run_test $test $tb $scope $variant $params
+          run_test $test $tb $scope NO_FENCE $variant $params
         done
+        for f_scope in ${fence_scopes[@]}; do
+          for f_variant in ${fence_variants[@]}; do
+            run_test $test $tb $scope $f_scope $f_variant $params
+        done
+      done
+
       done
     done
   done
