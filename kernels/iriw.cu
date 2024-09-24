@@ -26,33 +26,33 @@ __global__ void litmus_test(
 #ifdef ACQUIRE
     cuda::memory_order thread_1_order = cuda::memory_order_acquire;
     cuda::memory_order thread_3_order = cuda::memory_order_acquire;
-    #define THREAD_1_FENCE()
-    #define THREAD_3_FENCE()
+    #define FENCE_1()
+    #define FENCE_3()
 #elif defined(THREAD_1_FENCE)
     cuda::memory_order thread_1_order = cuda::memory_order_relaxed;
     cuda::memory_order thread_3_order = cuda::memory_order_acquire;
-    #define THREAD_1_FENCE() cuda::atomic_thread_fence(cuda::memory_order_acq_rel, fence_scope);
-    #define THREAD_3_FENCE()
+    #define FENCE_1() cuda::atomic_thread_fence(cuda::memory_order_acq_rel, FENCE_SCOPE);
+    #define FENCE_3()
 #elif defined(THREAD_3_FENCE)
     cuda::memory_order thread_1_order = cuda::memory_order_acquire;
     cuda::memory_order thread_3_order = cuda::memory_order_relaxed;
-    #define THREAD_1_FENCE()
-    #define THREAD_3_FENCE() cuda::atomic_thread_fence(cuda::memory_order_acq_rel, fence_scope);
+    #define FENCE_1()
+    #define FENCE_3() cuda::atomic_thread_fence(cuda::memory_order_acq_rel, FENCE_SCOPE);
 #elif defined(BOTH_FENCE)
     cuda::memory_order thread_1_order = cuda::memory_order_relaxed;
     cuda::memory_order thread_3_order = cuda::memory_order_relaxed;
-    #define THREAD_1_FENCE() cuda::atomic_thread_fence(cuda::memory_order_acq_rel, fence_scope);
-    #define THREAD_3_FENCE() cuda::atomic_thread_fence(cuda::memory_order_acq_rel, fence_scope);
+    #define FENCE_1() cuda::atomic_thread_fence(cuda::memory_order_acq_rel, FENCE_SCOPE);
+    #define FENCE_3() cuda::atomic_thread_fence(cuda::memory_order_acq_rel, FENCE_SCOPE);
 #elif defined(RELAXED)
     cuda::memory_order thread_1_order = cuda::memory_order_relaxed;
     cuda::memory_order thread_3_order = cuda::memory_order_relaxed;
-    #define THREAD_1_FENCE()
-    #define THREAD_3_FENCE()
+    #define FENCE_1()
+    #define FENCE_3()
 #else
     cuda::memory_order thread_1_order = cuda::memory_order_relaxed;
     cuda::memory_order thread_3_order = cuda::memory_order_relaxed;
-    #define THREAD_1_FENCE()
-    #define THREAD_3_FENCE()
+    #define FENCE_1()
+    #define FENCE_3()
 #endif
 
     // defined for different distributions of threads across threadblocks
@@ -76,7 +76,7 @@ __global__ void litmus_test(
 
       if (id_1_first_half) { // one observer thread reads x then y
         uint r0 = test_locations[x_1].load(thread_1_order);
-        THREAD_1_FENCE()
+        FENCE_1()
         uint r1 = test_locations[y_1].load(cuda::memory_order_relaxed);
         cuda::atomic_thread_fence(cuda::memory_order_seq_cst);
         read_results[wg_offset + id_1_final].r0 = r0;
@@ -84,7 +84,7 @@ __global__ void litmus_test(
       }
       else { // other observer thread reads y then x
         uint r2 = test_locations[y_1].load(thread_3_order);
-        THREAD_3_FENCE()
+        FENCE_3()
         uint r3 = test_locations[x_1].load(cuda::memory_order_relaxed);
         cuda::atomic_thread_fence(cuda::memory_order_seq_cst);
         read_results[wg_offset + id_1_final].r2 = r2;

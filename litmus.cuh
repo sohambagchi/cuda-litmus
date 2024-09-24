@@ -1,7 +1,6 @@
 // litmus.cuh
 #ifndef LITMUS_CUH
 #define LITMUS_CUH
-#endif
 
 #include <cuda_runtime.h>
 #include <cuda/atomic>
@@ -17,15 +16,14 @@ typedef cuda::atomic<uint> d_atomic_uint; // default, which is system too
 #endif
 
 #ifdef FENCE_SCOPE_BLOCK
-    cuda::thread_scope fence_scope = cuda::thread_scope_block;
+#define FENCE_SCOPE cuda::thread_scope_block
 #elif defined(FENCE_SCOPE_DEVICE)
-    cuda::thread_scope fence_scope = cuda::thread_scope_device;
+#define FENCE_SCOPE cuda::thread_scope_device
 #elif defined(FENCE_SCOPE_SYSTEM)
-    cuda::thread_scope fence_scope = cuda::thread_scope_system;
+#define FENCE_SCOPE cuda::thread_scope_system
 #else
-    cuda::thread_scope fence_scope = cuda::thread_scope_system; // default to system scope
+#define FENCE_SCOPE cuda::thread_scope_system
 #endif
-
 
 #define THREE_THREAD_TWO_MEM_LOCATIONS() \
   uint x_0 = (wg_offset + id_0) * kernel_params->mem_stride * 2; \
@@ -111,3 +109,4 @@ __global__ void check_results(
 
 int host_check_results(TestResults* results, bool print);
 
+#endif
