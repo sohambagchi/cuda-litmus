@@ -115,7 +115,7 @@ for test_file in "${test_files[@]}"; do
   for tb in ${threadblocks[@]}; do
     for scope in ${scopes[@]}; do
       for variant in ${variants[@]}; do
-        echo "Compiling $test-$tb-$scope-$variant runner"
+        echo "Compiling $test-$tb-$scope-NO_FENCE-$variant runner"
   	    nvcc -D$tb -D$scope -D$variant -I. -rdc=true -arch sm_80 runner.cu functions.cu "kernels/$test.cu" -o "$TARGET_DIR/$test-$tb-$scope-NO_FENCE-$variant-runner"
       done
       for f_scope in ${fence_scopes[@]}; do

@@ -23,7 +23,7 @@ def analyze(file_path):
       test_name = line.split()[1]  # Extract the test name
       # Tests that are block scoped or relaxed can see valid weak behaviors
       # We set it to all of these first and remove them as we see weak behaviors
-      if "SCOPE_BLOCK" in test_name or "RELAXED" in test_name:
+      if "SCOPE_BLOCK" in test_name  or "RELAXED" in test_name:
         total_expected_weak += 1
         unexpected_non_weak.add(test_name)
       else:
