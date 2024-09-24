@@ -23,27 +23,17 @@ __global__ void litmus_test(
   uint shuffled_workgroup = shuffled_workgroups[blockIdx.x];
   if (shuffled_workgroup < kernel_params->testing_workgroups) {
 
-#ifdef FENCE_SCOPE_BLOCK
-    cuda::thread_scope fence_scope = cuda::thread_scope_block;
-#elif defined(FENCE_SCOPE_DEVICE)
-    cuda::thread_scope fence_scope = cuda::thread_scope_device;
-#elif defined(FENCE_SCOPE_SYSTEM)
-    cuda::thread_scope fence_scope = cuda::thread_scope_system;
-#else
-    cuda::thread_scope fence_scope = cuda::thread_scope_device;
-#endif
-
 #ifdef ACQUIRE
     cuda::memory_order thread_1_order = cuda::memory_order_acquire;
     cuda::memory_order thread_3_order = cuda::memory_order_acquire;
     #define THREAD_1_FENCE()
     #define THREAD_3_FENCE()
-#elif defined(ACQUIRE_THREAD_1_FENCE)
+#elif defined(THREAD_1_FENCE)
     cuda::memory_order thread_1_order = cuda::memory_order_relaxed;
     cuda::memory_order thread_3_order = cuda::memory_order_acquire;
     #define THREAD_1_FENCE() cuda::atomic_thread_fence(cuda::memory_order_acq_rel, fence_scope);
     #define THREAD_3_FENCE()
-#elif defined(ACQUIRE_THREAD_3_FENCE)
+#elif defined(THREAD_3_FENCE)
     cuda::memory_order thread_1_order = cuda::memory_order_acquire;
     cuda::memory_order thread_3_order = cuda::memory_order_relaxed;
     #define THREAD_1_FENCE()
