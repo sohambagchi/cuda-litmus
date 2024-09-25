@@ -9,6 +9,7 @@ def analyze(file_path):
   unexpected_non_weak = set()
   total_expected_non_weak = 0
   unexpected_weak = set()
+  same_tb_weak = set() # pull these out separately because we haven't seen it yet
 
   test_results["all"] = {"weak": 0, "total": 0}
 
@@ -40,6 +41,8 @@ def analyze(file_path):
       if weak_value > 0:
         if test_name in unexpected_non_weak:
           unexpected_non_weak.remove(test_name)
+        if "TB_012" in test_name or "TB_0123" in test_name:
+          same_tb_weak.add(test_name)
         # Tests that are not block scoped or relaxed should not see weak behaviors
         if "SCOPE_BLOCK" not in test_name and "RELAXED" not in test_name:
           unexpected_weak.add(test_name)
@@ -55,10 +58,18 @@ def analyze(file_path):
   df_results = pd.DataFrame.from_dict(test_results, orient='index')
   print(f"Total tests: {len(test_results) - 1}")
   print(df_results)
+
   print(f"Total expected weak tests: {total_expected_weak}")
+  # only print out non same tb unexpected non weak tests
+  for test_name in list(unexpected_non_weak): 
+    if "TB_012" in test_name or "TB_0123" in test_name:
+      unexpected_non_weak.remove(test_name)
   print(f"Unexpected non-weak tests: {unexpected_non_weak}")
+
   print(f"Total expected non-weak tests: {total_expected_non_weak}")
   print(f"Unexpected weak tests: {unexpected_weak}")
+
+  print(f"Weak same threadblock tests: {same_tb_weak}")
 
 def main():
     parser = argparse.ArgumentParser()

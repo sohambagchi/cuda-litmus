@@ -139,6 +139,8 @@ do
     read -a threadblocks <<< "$(sed -n '2p' $test_file)"
     read -a scopes <<< "$(sed -n '3p' $test_file)"
     read -a variants <<< "$(sed -n '4p' $test_file)"
+    read -a fence_scopes <<< "$(sed -n '5p' $test_file)"
+    read -a fence_variants <<< "$(sed -n '6p' $test_file)"
 
     test="${test_info[0]}"
     params="${test_info[1]}"
