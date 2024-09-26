@@ -2,16 +2,6 @@
 #include "litmus.cuh"
 #include "functions.cuh"
 
-#ifdef TB_0_1_2_3
-#include "tb-0-1-2-3.h"
-#elif defined(TB_01_23)
-#include "tb-01-23.h"
-#elif defined(TB_0123)
-#include "tb-0123.h"
-#else
-#include "tb-0-1-2-3.h" // default to all different threadblocks
-#endif
-
 __global__ void litmus_test(
   d_atomic_uint* test_locations,
   ReadResults* read_results,

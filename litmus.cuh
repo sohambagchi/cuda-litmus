@@ -25,14 +25,99 @@ typedef cuda::atomic<uint> d_atomic_uint; // default, which is system too
 #define FENCE_SCOPE cuda::thread_scope_system
 #endif
 
+#ifdef TB_0_1_2
+#define DEFINE_IDS()                                                                                           \
+  uint total_ids = blockDim.x * kernel_params->testing_workgroups; \
+  uint id_0 = shuffled_workgroup * blockDim.x + threadIdx.x; \
+  uint new_workgroup = stripe_workgroup(shuffled_workgroup, threadIdx.x, kernel_params->testing_workgroups); \
+  uint id_1 = new_workgroup * blockDim.x + threadIdx.x; \
+  uint third_workgroup = stripe_workgroup(new_workgroup, threadIdx.x, kernel_params->testing_workgroups); \
+  uint id_2 = third_workgroup * blockDim.x + threadIdx.x; \
+  uint wg_offset = 0;
+
+#define RESULT_IDS() \
+  uint total_ids = blockDim.x * kernel_params->testing_workgroups; \
+  uint wg_offset = 0;
+#elif defined(TB_01_2)
+#define DEFINE_IDS()                                                                                           \
+  uint total_ids = blockDim.x * kernel_params->testing_workgroups; \
+  uint id_0 = shuffled_workgroup * blockDim.x + threadIdx.x; \
+  uint id_1 = shuffled_workgroup * blockDim.x + permute_id(threadIdx.x, kernel_params->permute_thread, blockDim.x); \
+  uint new_workgroup = stripe_workgroup(shuffled_workgroup, threadIdx.x, kernel_params->testing_workgroups); \
+  uint id_2 = new_workgroup * blockDim.x + permute_id(threadIdx.x, kernel_params->permute_thread, blockDim.x); \
+  uint wg_offset = 0;
+
+#define RESULT_IDS() \
+  uint total_ids = blockDim.x * kernel_params->testing_workgroups; \
+  uint wg_offset = 0;
+#elif defined(TB_0_12)
+#define DEFINE_IDS()                                                                                           \
+  uint total_ids = blockDim.x * kernel_params->testing_workgroups; \
+  uint id_0 = shuffled_workgroup * blockDim.x + threadIdx.x; \
+  uint new_workgroup = stripe_workgroup(shuffled_workgroup, threadIdx.x, kernel_params->testing_workgroups); \
+  uint id_1 = new_workgroup * blockDim.x + threadIdx.x; \
+  uint id_2 = new_workgroup * blockDim.x + permute_id(threadIdx.x, kernel_params->permute_thread, blockDim.x); \
+  uint wg_offset = 0;
+
+#define RESULT_IDS() \
+  uint total_ids = blockDim.x * kernel_params->testing_workgroups; \
+  uint wg_offset = 0;
+#elif defined(TB_012)
+#define DEFINE_IDS()                                                                                           \
+  uint total_ids = blockDim.x; \
+  uint id_0 = threadIdx.x; \
+  uint id_1 = permute_id(threadIdx.x, kernel_params->permute_thread, blockDim.x); \
+  uint id_2 = permute_id(id_1, kernel_params->permute_thread, blockDim.x); \
+  uint wg_offset = shuffled_workgroup * blockDim.x;
+
+#define RESULT_IDS() \
+  uint total_ids = blockDim.x; \
+  uint wg_offset = blockIdx.x * blockDim.x;
+#else
+// no inclusion
+#endif
+
+#ifdef TB_0_1_2_3
+#define DEFINE_IDS()                                                                                           \
+  uint total_ids = (blockDim.x * kernel_params->testing_workgroups) / 2;                                       \
+  uint id_0 = shuffled_workgroup * blockDim.x + threadIdx.x;                                                   \
+  uint id_0_final = id_0 % total_ids;                                                                          \
+  bool id_0_first_half = id_0 / total_ids == 0;                                                                \
+  uint new_workgroup = stripe_workgroup(shuffled_workgroup, threadIdx.x, kernel_params->testing_workgroups);   \
+  uint id_1 = new_workgroup * blockDim.x + permute_id(threadIdx.x, kernel_params->permute_thread, blockDim.x); \
+  uint id_1_final = id_1 % total_ids;                                                                          \
+  bool id_1_first_half = id_1 / total_ids == 0;                                                                \
+  uint wg_offset = 0;
+#elif defined(TB_01_23)
+#define DEFINE_IDS()                                                                                                \
+  uint total_ids = (blockDim.x * kernel_params->testing_workgroups) / 2;                                            \
+  uint id_0 = shuffled_workgroup * blockDim.x + threadIdx.x;                                                        \
+  uint id_0_final = id_0 % total_ids;                                                                               \
+  bool id_0_first_half = id_0 / total_ids == 0;                                                                     \
+  uint id_1 = shuffled_workgroup * blockDim.x + permute_id(threadIdx.x, kernel_params->permute_thread, blockDim.x); \
+  uint id_1_final = id_1 % total_ids;                                                                               \
+  bool id_1_first_half = id_1 / total_ids == 0;                                                                     \
+  uint wg_offset = 0;
+#elif defined(TB_0123)
+#define DEFINE_IDS()                                                              \
+  uint total_ids = blockDim.x / 2;                                                \
+  uint id_0 = threadIdx.x;                                                        \
+  uint id_0_final = id_0 % total_ids;                                             \
+  bool id_0_first_half = id_0 / total_ids == 0;                                   \
+  uint id_1 = permute_id(threadIdx.x, kernel_params->permute_thread, blockDim.x); \
+  uint id_1_final = id_1 % total_ids;                                             \
+  bool id_1_first_half = id_1 / total_ids == 0;                                   \
+  uint wg_offset = shuffled_workgroup * blockDim.x;                               
+#else
+// no inclusion
+#endif
+
 #define THREE_THREAD_TWO_MEM_LOCATIONS() \
   uint x_0 = (wg_offset + id_0) * kernel_params->mem_stride * 2; \
   uint x_1 = (wg_offset + id_1) * kernel_params->mem_stride * 2; \
   uint y_1 = (wg_offset + permute_id(id_1, kernel_params->permute_location, total_ids)) * kernel_params->mem_stride * 2 + kernel_params->mem_offset; \
   uint x_2 = (wg_offset + id_2) * kernel_params->mem_stride * 2; \
   uint y_2 = (wg_offset + permute_id(id_2, kernel_params->permute_location, total_ids)) * kernel_params->mem_stride * 2 + kernel_params->mem_offset;
-
-
 
 #define PRE_STRESS() \
   if (kernel_params->pre_stress) { \
