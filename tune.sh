@@ -69,7 +69,7 @@ function run_test() {
   echo "  Test $test-$tb-$scope-$fence_scope-$variant weak: $weak_behaviors, total: $total_behaviors, rate: $weak_rate per second"
 
   if (( $(echo "$weak_rate > 0" | bc -l) )); then
-    local test_result_dir="$RESULT_DIR/$test-$tb-$scope-$variant"
+    local test_result_dir="$RESULT_DIR/$test-$tb-$scope-$fence_scope-$variant"
     if [ ! -d "$test_result_dir" ] ; then
       mkdir "$test_result_dir"
       cp $PARAM_FILE "$test_result_dir"

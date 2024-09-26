@@ -10,6 +10,7 @@ def analyze(file_path):
   total_expected_non_weak = 0
   unexpected_weak = set()
   same_tb_weak = set() # pull these out separately because we haven't seen it yet
+  a_block_f_sys_dev_weak = set()
 
   test_results["all"] = {"weak": 0, "total": 0}
 
@@ -24,7 +25,7 @@ def analyze(file_path):
       test_name = line.split()[1]  # Extract the test name
       # Tests that are block scoped or relaxed can see valid weak behaviors
       # We set it to all of these first and remove them as we see weak behaviors
-      if "SCOPE_BLOCK" in test_name  or "RELAXED" in test_name:
+      if "SCOPE_BLOCK" in test_name  or "RELAXED" in test_name or "STORE_SC" in test_name:
         total_expected_weak += 1
         unexpected_non_weak.add(test_name)
       else:
@@ -43,8 +44,10 @@ def analyze(file_path):
           unexpected_non_weak.remove(test_name)
         if "TB_012" in test_name or "TB_0123" in test_name:
           same_tb_weak.add(test_name)
+        if "SCOPE_BLOCK-FENCE_SCOPE_DEVICE" in test_name or "SCOPE_BLOCK-FENCE_SCOPE_SYSTEM" in test_name:
+          a_block_f_sys_dev_weak.add(test_name)
         # Tests that are not block scoped or relaxed should not see weak behaviors
-        if "SCOPE_BLOCK" not in test_name and "RELAXED" not in test_name:
+        if "SCOPE_BLOCK" not in test_name and "RELAXED" not in test_name and "STORE_SC" not in test_name:
           unexpected_weak.add(test_name)
       # Update the dictionary values
       if test_name in test_results:
@@ -70,6 +73,7 @@ def analyze(file_path):
   print(f"Unexpected weak tests: {unexpected_weak}")
 
   print(f"Weak same threadblock tests: {same_tb_weak}")
+  print(f"Weak atomic sys/device, fence block: {a_block_f_sys_dev_weak}")
 
 def main():
     parser = argparse.ArgumentParser()
