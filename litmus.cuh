@@ -44,7 +44,7 @@ typedef cuda::atomic<uint> d_atomic_uint; // default, which is system too
   uint id_0 = shuffled_workgroup * blockDim.x + threadIdx.x; \
   uint id_1 = shuffled_workgroup * blockDim.x + permute_id(threadIdx.x, kernel_params->permute_thread, blockDim.x); \
   uint new_workgroup = stripe_workgroup(shuffled_workgroup, threadIdx.x, kernel_params->testing_workgroups); \
-  uint id_2 = new_workgroup * blockDim.x + permute_id(threadIdx.x, kernel_params->permute_thread, blockDim.x); \
+  uint id_2 = new_workgroup * blockDim.x + threadIdx.x; \
   uint wg_offset = 0;
 
 #define RESULT_IDS() \
@@ -62,6 +62,19 @@ typedef cuda::atomic<uint> d_atomic_uint; // default, which is system too
 #define RESULT_IDS() \
   uint total_ids = blockDim.x * kernel_params->testing_workgroups; \
   uint wg_offset = 0;
+#elif defined(TB_02_1)
+#define DEFINE_IDS()                                                                                           \
+  uint total_ids = blockDim.x * kernel_params->testing_workgroups; \
+  uint id_0 = shuffled_workgroup * blockDim.x + threadIdx.x; \
+  uint new_workgroup = stripe_workgroup(shuffled_workgroup, threadIdx.x, kernel_params->testing_workgroups); \
+  uint id_1 = new_workgroup * blockDim.x + threadIdx.x; \
+  uint id_2 = shuffled_workgroup * blockDim.x + permute_id(threadIdx.x, kernel_params->permute_thread, blockDim.x); \
+  uint wg_offset = 0;
+
+#define RESULT_IDS() \
+  uint total_ids = blockDim.x * kernel_params->testing_workgroups; \
+  uint wg_offset = 0;
+
 #elif defined(TB_012)
 #define DEFINE_IDS()                                                                                           \
   uint total_ids = blockDim.x; \
@@ -98,6 +111,19 @@ typedef cuda::atomic<uint> d_atomic_uint; // default, which is system too
   uint id_1_final = id_1 % total_ids;                                                                               \
   bool id_1_first_half = id_1 / total_ids == 0;                                                                     \
   uint wg_offset = 0;
+#elif defined(TB_0_2_13)
+#define DEFINE_IDS()                                                                                                \
+  uint total_ids = (blockDim.x * kernel_params->testing_workgroups) / 2;                                            \
+  uint id_0 = shuffled_workgroup * blockDim.x + threadIdx.x;                                                        \
+  uint id_0_final = id_0 % total_ids;                                                                               \
+  bool id_0_first_half = id_0 / total_ids == 0;                                                                     \
+  uint new_workgroup = stripe_workgroup(shuffled_workgroup, threadIdx.x, kernel_params->testing_workgroups);   \
+  uint id_1_offset = new_workgroup * blockDim.x;
+  uint id_1 = threadIdx.x;
+  uint id_1_final = (id_1_offset + id_1) % total_ids;
+  bool id_1_first_half = threadIdx.x / (blockDim.x/2) == 0;                                                                     \
+  uint wg_offset = 0;
+
 #elif defined(TB_0123)
 #define DEFINE_IDS()                                                              \
   uint total_ids = blockDim.x / 2;                                                \
