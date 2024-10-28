@@ -63,6 +63,8 @@ def analyze(file_path):
   print(df_results)
 
   print(f"Total expected weak tests: {total_expected_weak}")
+  print(f"Total weak tests: {total_expected_weak - len(unexpected_non_weak)}")
+
   # only print out non same tb unexpected non weak tests
   for test_name in list(unexpected_non_weak): 
     if "TB_012" in test_name or "TB_0123" in test_name:
@@ -70,6 +72,8 @@ def analyze(file_path):
   print(f"Unexpected non-weak tests: {unexpected_non_weak}")
 
   print(f"Total expected non-weak tests: {total_expected_non_weak}")
+  print(f"Total non-weak tests: {total_expected_non_weak - len(unexpected_weak)}")
+
   print(f"Unexpected weak tests: {unexpected_weak}")
 
   print(f"Weak same threadblock tests: {same_tb_weak}")
