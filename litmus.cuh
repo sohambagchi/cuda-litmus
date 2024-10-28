@@ -99,7 +99,7 @@ typedef cuda::atomic<uint> d_atomic_uint; // default, which is system too
   uint third_workgroup = stripe_workgroup(new_workgroup, threadIdx.x, kernel_params->testing_workgroups); \
   uint id_2 = third_workgroup * blockDim.x + threadIdx.x; \
   uint fourth_workgroup = stripe_workgroup(third_workgroup, threadIdx.x, kernel_params->testing_workgroups); \
-  uint id_2 = fourth_workgroup * blockDim.x + threadIdx.x; \
+  uint id_3 = fourth_workgroup * blockDim.x + threadIdx.x; \
   uint wg_offset = 0;
 #elif defined(TB_01_23)
 #define DEFINE_IDS()                                                                                                \
