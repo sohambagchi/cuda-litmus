@@ -63,7 +63,7 @@ __global__ void litmus_test(
 
     PRE_STRESS();
 
-    if (id_0 != id_1 && id_1 != id_2 && id_2 != id_3) {
+    if (id_0 != id_1 && id_0 != id_2 && id_0 != id_3 && id_1 != id_2 && id_1 != id_3 && id_2 != id_3) {
       
       test_locations[x_0].store(1, cuda::memory_order_relaxed); // write x
 

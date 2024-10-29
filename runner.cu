@@ -12,8 +12,6 @@
 typedef struct {
   int numMemLocations;
   int permuteLocation;
-  int aliasedMemory;
-  int workgroupMemory;
 } TestParams;
 
 typedef struct {
@@ -51,8 +49,6 @@ int parseTestParamsFile(const char* filename, TestParams* config) {
     if (sscanf(line, "%63[^=]=%d", key, &value) == 2) {
       if (strcmp(key, "numMemLocations") == 0) config->numMemLocations = value;
       else if (strcmp(key, "permuteLocation") == 0) config->permuteLocation = value;
-      else if (strcmp(key, "aliasedMemory") == 0) config->aliasedMemory = value;
-      else if (strcmp(key, "workgroupMemory") == 0) config->workgroupMemory = value;
     }
   }
 
@@ -168,7 +164,7 @@ void setDynamicKernelParams(KernelParams* h_kernelParams, StressParams params) {
   h_kernelParams->pre_stress = percentageCheck(params.preStressPct);
 }
 
-/** These parameters are static for all iterations of the test. Aliased memory is used for coherence tests. */
+/** These parameters are static for all iterations of the test. */
 void setStaticKernelParams(KernelParams* h_kernelParams, StressParams stressParams, TestParams testParams) {
   h_kernelParams->mem_stress_iterations = stressParams.memStressIterations;
   h_kernelParams->mem_stress_pattern = stressParams.memStressPattern;
@@ -178,13 +174,7 @@ void setStaticKernelParams(KernelParams* h_kernelParams, StressParams stressPara
   h_kernelParams->permute_location = testParams.permuteLocation;
   h_kernelParams->testing_workgroups = stressParams.testingWorkgroups;
   h_kernelParams->mem_stride = stressParams.memStride;
-
-  if (testParams.aliasedMemory == 1) {
-    h_kernelParams->mem_offset = 0;
-  }
-  else {
-    h_kernelParams->mem_offset = stressParams.memStride;
-  }
+  h_kernelParams->mem_offset = stressParams.memStride;
 }
 
 int total_behaviors(TestResults * results) {

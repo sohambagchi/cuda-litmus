@@ -1,3 +1,4 @@
+tuning-files/paper-example.txt
 tuning-files/iriw.txt
 tuning-files/wrc.txt
 tuning-files/isa2.txt
