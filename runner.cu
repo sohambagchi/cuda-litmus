@@ -182,7 +182,7 @@ int total_behaviors(TestResults * results) {
   results->res4 + results->res5 + results->res6 + results->res7 + 
   results->res8 + results->res9 + results->res10 + results->res11 + 
   results->res12 + results->res13 + results->res14 + results->res15 + 
-  results->weak;
+  results->weak + results->other;
 }
 
 
