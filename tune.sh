@@ -107,9 +107,9 @@ for test_file in "${test_files[@]}"; do
   read -a scopes <<< "$(sed -n '3p' $test_file)"
   read -a variants <<< "$(sed -n '4p' $test_file)"
 
-  if [ "$(wc -l < "$test_file")" -ge 5 ]; then
+  if [[ $(wc -l < $test_file) -ge 5 ]]; then
     # Perform the command if the line count condition is met
-    read -a fence_scopes <<< "$(sed -n '5p' "$test_file")"
+    read -a fence_scopes <<< "$(sed -n '5p' $test_file)"
     read -a fence_variants <<< "$(sed -n '6p' $test_file)"
   fi
 
@@ -122,7 +122,7 @@ for test_file in "${test_files[@]}"; do
         echo "Compiling $test-$tb-$scope-NO_FENCE-$variant runner"
   	    nvcc -D$tb -D$scope -D$variant -I. -rdc=true -arch sm_80 runner.cu functions.cu "kernels/$test.cu" -o "$TARGET_DIR/$test-$tb-$scope-NO_FENCE-$variant-runner"
       done
-      if [ "$(wc -l < "$test_file")" -ge 5 ]; then
+      if [[ $(wc -l < $test_file) -ge 5 ]]; then
         for f_scope in ${fence_scopes[@]}; do
           for f_variant in ${fence_variants[@]}; do
             echo "Compiling $test-$tb-$scope-$f_scope-$f_variant runner"
@@ -145,8 +145,8 @@ do
     read -a threadblocks <<< "$(sed -n '2p' $test_file)"
     read -a scopes <<< "$(sed -n '3p' $test_file)"
     read -a variants <<< "$(sed -n '4p' $test_file)"
-    if [ "$(wc -l < "$test_file")" -ge 5 ]; then
-      read -a fence_scopes <<< "$(sed -n '5p' "$test_file")"
+    if [[ $(wc -l < $test_file) -ge 5 ]]; then
+      read -a fence_scopes <<< "$(sed -n '5p' $test_file)"
       read -a fence_variants <<< "$(sed -n '6p' $test_file)"
     fi
 
@@ -158,7 +158,7 @@ do
         for variant in ${variants[@]}; do
           run_test $test $tb $scope NO_FENCE $variant $params
         done
-        if [ "$(wc -l < "$test_file")" -ge 5 ]; then
+        if [[ $(wc -l < $test_file) -ge 5 ]]; then
           for f_scope in ${fence_scopes[@]}; do
             for f_variant in ${fence_variants[@]}; do
               run_test $test $tb $scope $f_scope $f_variant $params
