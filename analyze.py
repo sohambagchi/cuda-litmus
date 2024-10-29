@@ -42,7 +42,7 @@ def analyze(file_path):
       if weak_value > 0:
         if test_name in unexpected_non_weak:
           unexpected_non_weak.remove(test_name)
-        if "TB_012" in test_name or "TB_0123" in test_name:
+        if ("TB_012" in test_name or "TB_0123" in test_name) and "TB_012_3" not in test_name:
           same_tb_weak.add(test_name)
         if "SCOPE_BLOCK-FENCE_SCOPE_DEVICE" in test_name or "SCOPE_BLOCK-FENCE_SCOPE_SYSTEM" in test_name:
           a_block_f_sys_dev_weak.add(test_name)
@@ -69,15 +69,15 @@ def analyze(file_path):
   for test_name in list(unexpected_non_weak): 
     if "TB_012" in test_name or "TB_0123" in test_name:
       unexpected_non_weak.remove(test_name)
-  print(f"Unexpected non-weak tests: {unexpected_non_weak}")
+#  print(f"Unexpected non-weak tests: {unexpected_non_weak}")
 
   print(f"Total expected non-weak tests: {total_expected_non_weak}")
   print(f"Total non-weak tests: {total_expected_non_weak - len(unexpected_weak)}")
 
-  print(f"Unexpected weak tests: {unexpected_weak}")
+#  print(f"Unexpected weak tests: {unexpected_weak}")
 
   print(f"Weak same threadblock tests: {same_tb_weak}")
-  print(f"Weak atomic sys/device, fence block: {a_block_f_sys_dev_weak}")
+#  print(f"Weak atomic sys/device, fence block: {a_block_f_sys_dev_weak}")
 
 def main():
     parser = argparse.ArgumentParser()
