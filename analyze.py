@@ -10,6 +10,8 @@ def analyze(file_path):
   same_tb_weak = set() # pull these out separately because we haven't seen it yet
   a_block_f_sys_dev_weak = set()
 
+  all_tests = {}
+
   test_summaries["all"] = {"tests": 0, "expected_weak": 0, "actual_weak": 0, "expected_non_weak": 0, "actual_non_weak": 0,  "weak_behaviors": 0, "total_behaviors": 0}
 
   # Reading the file
@@ -24,11 +26,15 @@ def analyze(file_path):
     if line.strip().startswith("Test"):
       parts = line.strip().split()
       test_name = parts[1]  # Test name
+      lean_test_name = test_name.replace("-", "_").replace("+", "_")
       test_base = test_name.split("-")[0]
 
       if first_iteration:
         # Tests that are block scoped or relaxed can see valid weak behaviors
         # We set it to all of these first and remove them as we see weak behaviors
+
+        all_tests[lean_test_name] = False
+
         if test_base not in test_summaries:
           test_summaries[test_base] = {"tests": 0, "expected_weak": 0, "actual_weak": 0, "expected_non_weak": 0, "actual_non_weak": 0,  "weak_behaviors": 0, "total_behaviors": 0}
 
@@ -43,8 +49,6 @@ def analyze(file_path):
           test_summaries["all"]["expected_non_weak"] += 1
           test_summaries["all"]["actual_non_weak"] += 1
 
-
-
         test_summaries[test_base]["tests"] += 1
         test_summaries["all"]["tests"] += 1
 
@@ -52,6 +56,7 @@ def analyze(file_path):
       total_value = int(parts[5].strip(','))  # Extract the "total" value
 
       if weak_value > 0:
+        all_tests[lean_test_name] = True
         if test_name in unexpected_non_weak:
          test_summaries[test_base]["actual_weak"] += 1
          test_summaries["all"]["actual_weak"] += 1
@@ -82,24 +87,37 @@ def analyze(file_path):
   print(f"Total iterations: {total_iterations}")
 
   print(df_summaries)
-  #print(df_results)
 
   # only print out non same tb unexpected non weak tests
   for test_name in list(unexpected_non_weak): 
     if "TB_012" in test_name or "TB_0123" in test_name:
       unexpected_non_weak.remove(test_name)
 #  print(f"Unexpected non-weak tests: {unexpected_non_weak}")
-
 #  print(f"Unexpected weak tests: {unexpected_weak}")
-
   print(f"Weak same threadblock tests: {same_tb_weak}")
 #  print(f"Weak atomic sys/device, fence block: {a_block_f_sys_dev_weak}")
+  return all_tests
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("file_path", help="File to parse")
+    parser.add_argument("-c", help="CSV file to modify")
+    parser.add_argument("-n", help="Name of the column in the CSV to modify")
+
     args = parser.parse_args()
-    analyze(args.file_path)
+    all_tests = analyze(args.file_path)
+
+    if args.c and args.n:
+      df = pd.read_csv(args.c)
+      df[args.n] = pd.NA
+      for test in all_tests.keys():
+        print(test)
+        if all_tests[test]:
+          df.loc[df['test'] == test, args.n] = "seen"
+        else:
+          df.loc[df['test'] == test, args.n] = "not seen"
+
+      df.to_csv(args.c, index=False)
 
 if __name__ == "__main__":
     main()
