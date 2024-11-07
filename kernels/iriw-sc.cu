@@ -71,15 +71,15 @@ __global__ void litmus_test(
 
     if (id_0 != id_1 && id_0 != id_2 && id_0 != id_3 && id_1 != id_2 && id_1 != id_3 && id_2 != id_3) {
       
-      test_locations[x_0].store(1, cuda::memory_order_seq_cst); // write x
+      test_locations[x_0].store(1, thread_0); // write x
 
-      uint r0 = test_locations[x_1].load(cuda::memory_order_seq_cst); // read x
-      uint r1 = test_locations[y_1].load(cuda::memory_order_seq_cst); // read y
+      uint r0 = test_locations[x_1].load(thread_1_a); // read x
+      uint r1 = test_locations[y_1].load(thread_1_b); // read y
 
-      test_locations[y_2].store(1, cuda::memory_order_seq_cst); // write y
+      test_locations[y_2].store(1, thread_2); // write y
 
-      uint r2 = test_locations[y_3].load(cuda::memory_order_seq_cst); // read y
-      uint r3 = test_locations[x_3].load(cuda::memory_order_seq_cst); // read x
+      uint r2 = test_locations[y_3].load(thread_3_a); // read y
+      uint r3 = test_locations[x_3].load(thread_3_b); // read x
 
       cuda::atomic_thread_fence(cuda::memory_order_seq_cst);
       read_results[wg_offset + id_1].r0 = r0;
