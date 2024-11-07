@@ -47,6 +47,20 @@ __global__ void litmus_test(
     cuda::memory_order thread_2 = cuda::memory_order_seq_cst;
     cuda::memory_order thread_3_a = cuda::memory_order_seq_cst;
     cuda::memory_order thread_3_b = cuda::memory_order_seq_cst;
+#elif defined(RELEASE_WRITES)
+    cuda::memory_order thread_0 = cuda::memory_order_release;
+    cuda::memory_order thread_1_a = cuda::memory_order_acquire;
+    cuda::memory_order thread_1_b = cuda::memory_order_relaxed;
+    cuda::memory_order thread_2 = cuda::memory_order_release;
+    cuda::memory_order thread_3_a = cuda::memory_order_acquire;
+    cuda::memory_order thread_3_b = cuda::memory_order_relaxed;
+#elif defined(ALL_ACQUIRE)
+    cuda::memory_order thread_0 = cuda::memory_order_relaxed;
+    cuda::memory_order thread_1_a = cuda::memory_order_acquire;
+    cuda::memory_order thread_1_b = cuda::memory_order_acquire;
+    cuda::memory_order thread_2 = cuda::memory_order_relaxed;
+    cuda::memory_order thread_3_a = cuda::memory_order_acquire;
+    cuda::memory_order thread_3_b = cuda::memory_order_acquire;
 #else
     cuda::memory_order thread_0 = cuda::memory_order_relaxed;
     cuda::memory_order thread_1_a = cuda::memory_order_acquire;
