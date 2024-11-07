@@ -64,6 +64,12 @@ __global__ void litmus_test(
     #define FENCE_2()
 #endif
 
+#ifdef THREAD_0_STORE_RELEASE
+    cuda::memory_order thread_0_store = cuda::memory_order_release;
+#else
+    cuda::memory_order thread_0_store = cuda::memory_order_relaxed;
+#endif
+
     // defined for different distributions of threads across threadblocks
     DEFINE_IDS();
 
@@ -75,7 +81,7 @@ __global__ void litmus_test(
     if (id_0 != id_1 && id_1 != id_2 && id_0 != id_2) {
 
       // Thread 0
-      test_locations[x_0].store(1, cuda::memory_order_relaxed);
+      test_locations[x_0].store(1, thread_0_store);
 
       // Thread 1
       uint r0 = test_locations[x_1].load(thread_1_load);
