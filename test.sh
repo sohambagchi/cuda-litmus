@@ -16,10 +16,6 @@ nvcc -DTB_01_23 -DSCOPE_DEVICE -DSECOND_LOAD_SC -I. -rdc=true -arch sm_80 runner
 
 nvcc -DSCOPE_DEVICE -I. -rdc=true -arch sm_80 runner.cu functions.cu kernels/mp.cu -o target/mp-runner
 
-nvcc -DTB_0_1_2 -DSCOPE_SYSTEM -DFENCE_SCOPE_DEVICE -DTHREAD_2_FENCE -I. -rdc=true -arch sm_80 runner.cu functions.cu kernels/rwc.cu -o target/rwc-TB_0_1_2-SCOPE_SYSTEM-FENCE_SCOPE_DEVICE-THREAD_2_FENCE-runner
-
-nvcc -DTB_0_1_2 -DSCOPE_SYSTEM -DFENCE_SCOPE_DEVICE -DTHREAD_2_FENCE -DTHREAD_0_STORE_RELEASE -I. -rdc=true -arch sm_80 runner.cu functions.cu kernels/rwc.cu -o target/rwc-TB_0_1_2-SCOPE_SYSTEM-FENCE_SCOPE_DEVICE-THREAD_2_FENCE-THREAD_0_STORE_RELEASE-runner
-
 
 ## Run them
 
@@ -35,6 +31,9 @@ echo "iriw-second-load-sc:"
 ./target/iriw-second-load-sc-runner -s $PARAMS_DIR -t params/2-loc.txt
 echo "mp:"
 ./target/mp-runner -s $PARAMS_DIR -t params/2-loc.txt
+
+
+## Run some others
 
 nvcc -DTB_0_1_2 -DSCOPE_SYSTEM -DFENCE_SCOPE_DEVICE -DTHREAD_2_FENCE -I. -rdc=true -arch sm_80 runner.cu functions.cu kernels/rwc.cu -o target/rwc-TB_0_1_2-SCOPE_SYSTEM-FENCE_SCOPE_DEVICE-THREAD_2_FENCE-runner
 
