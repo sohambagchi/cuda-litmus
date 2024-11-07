@@ -20,6 +20,12 @@ __global__ void litmus_test(
     cuda::memory_order thread_2_load = cuda::memory_order_acquire;
     #define FENCE_1()
     #define FENCE_2()
+#elif defined(ACQ_REL)
+    cuda::memory_order thread_1_load = cuda::memory_order_acquire;
+    cuda::memory_order thread_1_store = cuda::memory_order_release;
+    cuda::memory_order thread_2_load = cuda::memory_order_acquire;
+    #define FENCE_1()
+    #define FENCE_2()
 #elif defined(RELEASE)
     cuda::memory_order thread_1_load = cuda::memory_order_relaxed;
     cuda::memory_order thread_1_store = cuda::memory_order_release;

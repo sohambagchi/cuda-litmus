@@ -89,3 +89,14 @@ echo "wrc-TB_01_2-SCOPE_SYSTEM-NO_FENCE-ACQUIRE:"
 
 echo "wrc-TB_01_2-SCOPE_SYSTEM-NO_FENCE-ACQUIRE-THREAD_0_STORE_RELEASE:"
 ./target/wrc-TB_01_2-SCOPE_SYSTEM-NO_FENCE-ACQUIRE-THREAD_0_STORE_RELEASE-runner -s results/wrc-TB_01_2-SCOPE_SYSTEM-NO_FENCE-ACQUIRE/params.txt -t params/2-loc.txt
+
+
+nvcc -DTB_01_2 -DSCOPE_SYSTEM -DACQ_REL -I. -rdc=true -arch sm_80 runner.cu functions.cu kernels/wrc.cu -o target/wrc-TB_01_2-SCOPE_SYSTEM-NO_FENCE-ACQ_REL-runner
+
+nvcc -DTB_01_2 -DSCOPE_SYSTEM -DACQ_REL -DTHREAD_0_STORE_RELEASE -I. -rdc=true -arch sm_80 runner.cu functions.cu kernels/wrc.cu -o target/wrc-TB_01_2-SCOPE_SYSTEM-NO_FENCE-ACQ_REL-THREAD_0_STORE_RELEASE-runner
+
+echo "wrc-TB_01_2-SCOPE_SYSTEM-NO_FENCE-ACQ_REL:"
+./target/wrc-TB_01_2-SCOPE_SYSTEM-NO_FENCE-ACQ_REL-runner -s results/wrc-TB_01_2-SCOPE_SYSTEM-NO_FENCE-ACQUIRE/params.txt -t params/2-loc.txt
+
+echo "wrc-TB_01_2-SCOPE_SYSTEM-NO_FENCE-ACQ_REL-THREAD_0_STORE_RELEASE:"
+./target/wrc-TB_01_2-SCOPE_SYSTEM-NO_FENCE-ACQ_REL-THREAD_0_STORE_RELEASE-runner -s results/wrc-TB_01_2-SCOPE_SYSTEM-NO_FENCE-ACQUIRE/params.txt -t params/2-loc.txt
