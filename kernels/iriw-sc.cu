@@ -19,6 +19,44 @@ __global__ void litmus_test(
   uint shuffled_workgroup = shuffled_workgroups[blockIdx.x];
   if (shuffled_workgroup < kernel_params->testing_workgroups) {
 
+#ifdef STORES_SC
+    cuda::memory_order thread_0 = cuda::memory_order_seq_cst;
+    cuda::memory_order thread_1_a = cuda::memory_order_acquire;
+    cuda::memory_order thread_1_b = cuda::memory_order_relaxed;
+    cuda::memory_order thread_2 = cuda::memory_order_seq_cst;
+    cuda::memory_order thread_3_a = cuda::memory_order_acquire;
+    cuda::memory_order thread_3_b = cuda::memory_order_relaxed;
+#elif defined(FIRST_LOAD_SC)
+    cuda::memory_order thread_0 = cuda::memory_order_relaxed;
+    cuda::memory_order thread_1_a = cuda::memory_order_seq_cst;
+    cuda::memory_order thread_1_b = cuda::memory_order_relaxed;
+    cuda::memory_order thread_2 = cuda::memory_order_relaxed;
+    cuda::memory_order thread_3_a = cuda::memory_order_seq_cst;
+    cuda::memory_order thread_3_b = cuda::memory_order_relaxed;
+#elif defined(SECOND_LOAD_SC)
+    cuda::memory_order thread_0 = cuda::memory_order_relaxed;
+    cuda::memory_order thread_1_a = cuda::memory_order_relaxed;
+    cuda::memory_order thread_1_b = cuda::memory_order_seq_cst;
+    cuda::memory_order thread_2 = cuda::memory_order_relaxed;
+    cuda::memory_order thread_3_a = cuda::memory_order_relaxed;
+    cuda::memory_order thread_3_b = cuda::memory_order_seq_cst;
+#elif defined(ALL_SC)
+    cuda::memory_order thread_0 = cuda::memory_order_seq_cst;
+    cuda::memory_order thread_1_a = cuda::memory_order_seq_cst;
+    cuda::memory_order thread_1_b = cuda::memory_order_seq_cst;
+    cuda::memory_order thread_2 = cuda::memory_order_seq_cst;
+    cuda::memory_order thread_3_a = cuda::memory_order_seq_cst;
+    cuda::memory_order thread_3_b = cuda::memory_order_seq_cst;
+#else
+    cuda::memory_order thread_0 = cuda::memory_order_relaxed;
+    cuda::memory_order thread_1_a = cuda::memory_order_acquire;
+    cuda::memory_order thread_1_b = cuda::memory_order_relaxed;
+    cuda::memory_order thread_2 = cuda::memory_order_relaxed;
+    cuda::memory_order thread_3_a = cuda::memory_order_acquire;
+    cuda::memory_order thread_3_b = cuda::memory_order_relaxed;
+#endif
+
+
     // defined for different distributions of threads across threadblocks
     DEFINE_IDS();
 
