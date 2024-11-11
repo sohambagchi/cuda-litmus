@@ -1,5 +1,6 @@
 import pandas as pd
 import argparse
+import json
 
 def main():
   parser = argparse.ArgumentParser()
@@ -46,7 +47,7 @@ def main():
       test_summaries[test_base]["hopper_seen"] += 1
       test_summaries["all"]["hopper_seen"] += 1
 
-  print(test_summaries)
+  print(json.dumps(test_summaries, indent=2))
 
 if __name__ == "__main__":
     main()

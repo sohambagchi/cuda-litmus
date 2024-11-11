@@ -89,12 +89,12 @@ def analyze(file_path):
   print(df_summaries)
 
   # only print out non same tb unexpected non weak tests
-  for test_name in list(unexpected_non_weak): 
+  for test_name in list(unexpected_non_weak):
     if "TB_012" in test_name or "TB_0123" in test_name:
       unexpected_non_weak.remove(test_name)
 #  print(f"Unexpected non-weak tests: {unexpected_non_weak}")
-#  print(f"Unexpected weak tests: {unexpected_weak}")
-  print(f"Weak same threadblock tests: {same_tb_weak}")
+  #print(f"Unexpected weak tests: {unexpected_weak}")
+  #print(f"Weak same threadblock tests: {same_tb_weak}")
 #  print(f"Weak atomic sys/device, fence block: {a_block_f_sys_dev_weak}")
   return all_tests
 
@@ -111,11 +111,13 @@ def main():
       df = pd.read_csv(args.c)
       df[args.n] = pd.NA
       for test in all_tests.keys():
-        print(test)
+        #print(test)
+        # Handle some mismatched names
+        updated_test = test.replace("TB_02_1_S", "TB_1_02_S")
         if all_tests[test]:
-          df.loc[df['test'] == test, args.n] = "seen"
+          df.loc[df['test'] == updated_test, args.n] = "seen"
         else:
-          df.loc[df['test'] == test, args.n] = "not seen"
+          df.loc[df['test'] == updated_test, args.n] = "not seen"
 
       df.to_csv(args.c, index=False)
 
