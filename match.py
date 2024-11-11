@@ -35,14 +35,20 @@ def main():
 
     if row["ampere"] == "seen":
       if row["PTX_MCA"] == "disallowed":
-        print(f"Unexpected weak test on Ampere: {test}")
+        print(f"Unexpected weak test on Ampere under PTX_MCA: {test}")
+
+      if row["PTX"] == "disallowed":
+        print(f"Unexpected weak test on Ampere under PTX: {test}")
 
       test_summaries[test_base]["ampere_seen"] += 1
       test_summaries["all"]["ampere_seen"] += 1
 
     if row["hopper"] == "seen":
       if row["PTX_MCA"] == "disallowed":
-        print(f"Unexpected weak test on Hopper: {test}")
+        print(f"Unexpected weak test on Hopper under PTX_MCA: {test}")
+
+      if row["PTX"] == "disallowed":
+        print(f"Unexpected weak test on Hopper under PTX: {test}")
 
       test_summaries[test_base]["hopper_seen"] += 1
       test_summaries["all"]["hopper_seen"] += 1
