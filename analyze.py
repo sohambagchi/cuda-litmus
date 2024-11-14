@@ -1,5 +1,7 @@
 import pandas as pd
 import argparse
+import re
+
 
 def analyze(file_path):
   # Initialize the dictionary to store test results
@@ -12,7 +14,7 @@ def analyze(file_path):
 
   all_tests = {}
 
-  test_summaries["all"] = {"tests": 0, "expected_weak": 0, "actual_weak": 0, "expected_non_weak": 0, "actual_non_weak": 0,  "weak_behaviors": 0, "total_behaviors": 0}
+  test_summaries["all"] = {"tests": 0, "expected_weak": 0, "actual_weak": 0, "expected_non_weak": 0, "actual_non_weak": 0,  "weak_behaviors": 0, "total_behaviors": 0, "avg_relaxed_rate": []}
 
   # Reading the file
   with open(file_path, 'r') as file:
@@ -26,6 +28,7 @@ def analyze(file_path):
     if line.strip().startswith("Test"):
       parts = line.strip().split()
       test_name = parts[1]  # Test name
+      test_rate = int(re.search(r"rate: (\d+) per second", line.strip()).group(1))
       lean_test_name = test_name.replace("-", "_").replace("+", "_")
       test_base = test_name.split("-")[0]
 
@@ -36,7 +39,11 @@ def analyze(file_path):
         all_tests[lean_test_name] = False
 
         if test_base not in test_summaries:
-          test_summaries[test_base] = {"tests": 0, "expected_weak": 0, "actual_weak": 0, "expected_non_weak": 0, "actual_non_weak": 0,  "weak_behaviors": 0, "total_behaviors": 0}
+          test_summaries[test_base] = {"tests": 0, "expected_weak": 0, "actual_weak": 0, "expected_non_weak": 0, "actual_non_weak": 0,  "weak_behaviors": 0, "total_behaviors": 0, "avg_relaxed_rate": []}
+
+        if "RELAXED" in test_name:
+          test_summaries[test_base]["avg_relaxed_rate"].append(test_rate)
+          test_summaries["all"]["avg_relaxed_rate"].append(test_rate)
 
         if "SCOPE_BLOCK" in test_name  or "RELAXED" in test_name or "STORE_SC" in test_name:
           test_summaries[test_base]["expected_weak"] += 1
@@ -81,6 +88,11 @@ def analyze(file_path):
         if parts[1] == "1":
           first_iteration = False
 
+  for key in test_summaries:
+    if len(test_summaries[key]["avg_relaxed_rate"]) > 0:
+      test_summaries[key]["avg_relaxed_rate"] = sum(test_summaries[key]["avg_relaxed_rate"])/len(test_summaries[key]["avg_relaxed_rate"])
+    else:
+      test_summaries[key]["avg_relaxed_rate"] = 0
   # Convert dictionary to a pandas DataFrame for better visualization
   df_summaries = pd.DataFrame.from_dict(test_summaries, orient='index')
 
@@ -93,7 +105,7 @@ def analyze(file_path):
     if "TB_012" in test_name or "TB_0123" in test_name:
       unexpected_non_weak.remove(test_name)
 #  print(f"Unexpected non-weak tests: {unexpected_non_weak}")
-  #print(f"Unexpected weak tests: {unexpected_weak}")
+  print(f"Unexpected weak tests: {unexpected_weak}")
   #print(f"Weak same threadblock tests: {same_tb_weak}")
 #  print(f"Weak atomic sys/device, fence block: {a_block_f_sys_dev_weak}")
   return all_tests
