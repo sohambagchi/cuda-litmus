@@ -12,7 +12,7 @@ def main():
   machines = ["ampere", "hopper"]
 
   test_summaries = {}
-  test_summaries["all"] = {"tests": 0, "relaxed_tests": 0, "ptx_allowed": 0, "ptx_mca_allowed": 0, "ptx_matched": 0, "ptx_mca_matched": 0}
+  test_summaries["all"] = {"tests": 0, "relaxed_tests": 0, "ptx_allowed": 0, "ptx_mca_allowed": 0, "ptx_matched": 0, "ptx_mca_matched": 0, "ptx_allowed_matched": 0, "ptx_mca_allowed_matched": 0, "ptx_disallowed_matched": 0, "ptx_mca_disallowed_matched": 0}
 
   for machine in machines:
       test_summaries["all"][machine] = {"ptx_allowed_seen": 0, "ptx_disallowed_seen": 0, "ptx_mca_allowed_seen": 0, "ptx_mca_disallowed_seen": 0, "relaxed_seen": 0, "ptx_matched": 0, "ptx_mca_matched": 0}
@@ -46,7 +46,11 @@ def main():
         test_summaries["all"]["ptx_mca_allowed"] += 1
 
     ptx_matched = True
+    ptx_allowed_matched = True
+    ptx_disallowed_matched = True
     ptx_mca_matched = True
+    ptx_mca_allowed_matched = True
+    ptx_mca_disallowed_matched = True
     for machine in machines:
       if row[machine] == "seen":
         if "RELAXED" in test:
@@ -55,6 +59,7 @@ def main():
         else:
           if row["PTX_MCA"] == "disallowed":
             ptx_mca_matched = False
+            ptx_mca_disallowed_matched = False
             print(f"Unexpected weak test on {machine} under PTX_MCA: {test}")
             test_summaries["all"][machine]["ptx_mca_disallowed_seen"] += 1
             test_summaries[test_base][machine]["ptx_mca_disallowed_seen"] += 1
@@ -65,6 +70,7 @@ def main():
 
           if row["PTX"] == "disallowed":
             ptx_matched = False
+            ptx_disallowed_matched = False
             print(f"Unexpected weak test on {machine} under PTX: {test}")
             test_summaries["all"][machine]["ptx_disallowed_seen"] += 1
             test_summaries[test_base][machine]["ptx_disallowed_seen"] += 1
@@ -78,16 +84,28 @@ def main():
         if row["PTX"] == "disallowed":
           test_summaries["all"][machine]["ptx_matched"] += 1
         else:
+          ptx_allowed_matched = False
           ptx_matched = False
         if row["PTX_MCA"] == "disallowed":
           test_summaries["all"][machine]["ptx_mca_matched"] += 1
         else:
+          ptx_mca_allowed_matched = False
           ptx_mca_matched = False
     if "RELAXED" not in test:    
       if ptx_matched:
         test_summaries["all"]["ptx_matched"] += 1
       if ptx_mca_matched:
         test_summaries["all"]["ptx_mca_matched"] += 1
+
+      if row["PTX"] == "allowed" and ptx_allowed_matched:
+        test_summaries["all"]["ptx_allowed_matched"] += 1
+      if row["PTX"] == "disallowed" and ptx_disallowed_matched:
+        test_summaries["all"]["ptx_disallowed_matched"] += 1
+
+      if row["PTX_MCA"] == "allowed" and ptx_mca_allowed_matched:
+        test_summaries["all"]["ptx_mca_allowed_matched"] += 1
+      if row["PTX_MCA"] == "disallowed" and ptx_mca_disallowed_matched:
+        test_summaries["all"]["ptx_mca_disallowed_matched"] += 1
 
   print(json.dumps(test_summaries, indent=2))
 
