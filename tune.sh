@@ -28,7 +28,7 @@ function random_config() {
   local workgroupLimiter=$1
   local workgroupSizeLimiter=$2
 
-  echo "testIterations=200" > $PARAM_FILE
+  echo "testIterations=1000" > $PARAM_FILE
   local testingWorkgroups=$(random_between 2 $workgroupLimiter)
   echo "testingWorkgroups=$testingWorkgroups" >> $PARAM_FILE
   local maxWorkgroups=$(random_between $testingWorkgroups $workgroupLimiter)
@@ -85,7 +85,7 @@ function run_test() {
 
 }
 
-if [ $# != 1 ] ; then
+if [ $# -lt 1 ] ; then
   echo "Need to pass file with test combinations"
   exit 1
 fi
@@ -99,8 +99,15 @@ if [ ! -d "$TARGET_DIR" ] ; then
 fi
 
 tuning_file=$1
+
+compile=true
+if [ $# == 2 ] ; then
+  compile=false
+fi
+
 readarray test_files < $tuning_file
 
+if "$compile"; then
 for test_file in "${test_files[@]}"; do
   read -a test_info <<< "$(sed -n '1p' $test_file)"
   read -a threadblocks <<< "$(sed -n '2p' $test_file)"
@@ -133,6 +140,7 @@ for test_file in "${test_files[@]}"; do
     done
   done
 done
+fi
 
 iter=0
 
