@@ -302,6 +302,16 @@ typedef struct {
 } ReadResults;
 
 typedef struct {
+  uint t0;
+  uint t1;
+  uint t2;
+  uint t3;
+  uint x;
+  uint y;
+  uint z;
+} TestInstance;
+
+typedef struct {
   cuda::atomic<uint, cuda::thread_scope_device> res0; // up to 16 combinations of valid test results in the implemented tests
   cuda::atomic<uint, cuda::thread_scope_device> res1;
   cuda::atomic<uint, cuda::thread_scope_device> res2;
@@ -346,7 +356,8 @@ __global__ void litmus_test(
   cuda::atomic<uint, cuda::thread_scope_device>* barrier,
   uint* scratchpad,
   uint* scratch_locations,
-  KernelParams* kernel_params);
+  KernelParams* kernel_params,
+  TestInstance* test_instances);
 
 __global__ void check_results(
   d_atomic_uint* test_locations,

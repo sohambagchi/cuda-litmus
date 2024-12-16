@@ -6,7 +6,6 @@
 #include <cuda_runtime.h>
 #include <atomic>
 #include <cuda/atomic>
-#include "functions.cuh"
 #include "litmus.cuh"
 
 typedef struct {
@@ -224,6 +223,16 @@ void run(StressParams stressParams, TestParams testParams, bool print_results) {
   cudaMalloc(&d_kernelParams, sizeof(KernelParams));
   setStaticKernelParams(h_kernelParams, stressParams, testParams);
 
+  int testInstancesSize = sizeof(TestInstance) * testingThreads;
+  TestInstance* h_testInstances = (TestInstance*)malloc(testInstancesSize);
+  TestInstance* d_testInstances;
+  cudaMalloc(&d_testInstances, testInstancesSize);
+
+  int weakSize = sizeof(bool) * testingThreads;
+  bool* h_weak = (bool*)malloc(weakSize);
+  bool* d_weak;
+  cudaMalloc(&d_weak, weakSize);
+
   // run iterations
   std::chrono::time_point<std::chrono::system_clock> start, end;
   start = std::chrono::system_clock::now();
@@ -239,6 +248,9 @@ void run(StressParams stressParams, TestParams testParams, bool print_results) {
     cudaMemset(readResults, 0, readResultsSize);
     cudaMemset(barrier, 0, barrierSize);
     cudaMemset(scratchpad, 0, scratchpadSize);
+    cudaMemset(d_testInstances, 0, testInstancesSize);
+    cudaMemset(d_weak, false, weakSize);
+
     setShuffledWorkgroups(h_shuffledWorkgroups, numWorkgroups, stressParams.shufflePct);
     cudaMemcpy(d_shuffledWorkgroups, h_shuffledWorkgroups, shuffledWorkgroupsSize, cudaMemcpyHostToDevice);
     setScratchLocations(h_scratchLocations, numWorkgroups, stressParams);
@@ -246,14 +258,30 @@ void run(StressParams stressParams, TestParams testParams, bool print_results) {
     setDynamicKernelParams(h_kernelParams, stressParams);
     cudaMemcpy(d_kernelParams, h_kernelParams, sizeof(KernelParams), cudaMemcpyHostToDevice);
 
-    litmus_test << <numWorkgroups, stressParams.workgroupSize >> > (testLocations, readResults, d_shuffledWorkgroups, barrier, scratchpad, d_scratchLocations, d_kernelParams);
+    litmus_test << <numWorkgroups, stressParams.workgroupSize >> > (testLocations, readResults, d_shuffledWorkgroups, barrier, scratchpad, d_scratchLocations, d_kernelParams, d_testInstances);
 
-    check_results << <stressParams.testingWorkgroups, stressParams.workgroupSize >> > (testLocations, readResults, d_testResults, d_kernelParams);
+    check_results << <stressParams.testingWorkgroups, stressParams.workgroupSize >> > (testLocations, readResults, d_testResults, d_kernelParams, d_weak);
 
     cudaMemcpy(h_testResults, d_testResults, sizeof(TestResults), cudaMemcpyDeviceToHost);
+    cudaMemcpy(h_testInstances, d_testInstances, testInstancesSize, cudaMemcpyDeviceToHost);
+    cudaMemcpy(h_weak, d_weak, weakSize, cudaMemcpyDeviceToHost);
 
     if (print_results) {
       std::cout << "Iteration " << i << "\n";
+      for (uint i = 0; i < testingThreads; i++) {
+        if (h_weak[i]) {
+          std::cout << "Weak result " << i << "\n";
+          std::cout << "  t0: " << h_testInstances[i].t0;
+          std::cout << "  t1: " << h_testInstances[i].t1;
+          std::cout << "  t2: " << h_testInstances[i].t2;
+          std::cout << "  t3: " << h_testInstances[i].t3 << "\n";
+
+          std::cout << "  x: " << h_testInstances[i].x;
+          std::cout << "  y: " << h_testInstances[i].y;
+          std::cout << "  z: " << h_testInstances[i].z << "\n";
+
+        }
+      }
     }
     weakBehaviors += host_check_results(h_testResults, print_results);
     totalBehaviors += total_behaviors(h_testResults);
@@ -280,6 +308,10 @@ void run(StressParams stressParams, TestParams testParams, bool print_results) {
   free(h_scratchLocations);
   cudaFree(d_kernelParams);
   free(h_kernelParams);
+  cudaFree(d_testInstances);
+  free(h_testInstances);
+  cudaFree(d_weak);
+  free(h_weak);
 }
 
 int main(int argc, char* argv[]) {

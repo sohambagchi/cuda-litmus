@@ -1,6 +1,6 @@
 #include <iostream>
 #include "litmus.cuh"
-#include "functions.cuh"
+#include "functions.cu"
 
 // iriw thread mappings
 // thread 0: write x, write z

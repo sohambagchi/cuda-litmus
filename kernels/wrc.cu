@@ -1,6 +1,6 @@
 #include <iostream>
 #include "litmus.cuh"
-#include "functions.cuh"
+#include "functions.cu"
 
 __global__ void litmus_test(
   d_atomic_uint* test_locations,
