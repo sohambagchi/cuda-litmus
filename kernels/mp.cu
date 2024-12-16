@@ -2,12 +2,6 @@
 #include "litmus.cuh"
 #include "functions.cu"
 
-// iriw thread mappings
-// thread 0: write x, write z
-// thread 1: read z, write y, read y
-// thread 2: write y, write a
-// thread 3: read a, read x
-
 __global__ void litmus_test(
   d_atomic_uint* test_locations,
   ReadResults* read_results,
@@ -15,7 +9,8 @@ __global__ void litmus_test(
   cuda::atomic<uint, cuda::thread_scope_device>* barrier,
   uint* scratchpad,
   uint* scratch_locations,
-  KernelParams* kernel_params) {
+  KernelParams* kernel_params,
+  TestInstance* test_instances) {
   uint shuffled_workgroup = shuffled_workgroups[blockIdx.x];
   if (shuffled_workgroup < kernel_params->testing_workgroups) {
 
@@ -54,7 +49,8 @@ __global__ void check_results(
   d_atomic_uint* test_locations,
   ReadResults* read_results,
   TestResults* test_results,
-  KernelParams* kernel_params) {
+  KernelParams* kernel_params,
+  bool* weak) {
   uint id_0 = blockIdx.x * blockDim.x + threadIdx.x;
   uint x = test_locations[id_0 * kernel_params->mem_stride * 2];
   uint r0 = read_results[id_0].r0;

@@ -9,7 +9,8 @@ __global__ void litmus_test(
   cuda::atomic<uint, cuda::thread_scope_device>* barrier,
   uint* scratchpad,
   uint* scratch_locations,
-  KernelParams* kernel_params) {
+  KernelParams* kernel_params,
+  TestInstance* test_instances) {
 
   uint shuffled_workgroup = shuffled_workgroups[blockIdx.x];
   if (shuffled_workgroup < kernel_params->testing_workgroups) {
@@ -132,13 +133,24 @@ __global__ void litmus_test(
     DEFINE_IDS();
 
     uint x_0 = (wg_offset + id_0) * kernel_params->mem_stride * 3;
-    uint y_0 = (wg_offset + permute_id(id_0, kernel_params->permute_location, total_ids)) * kernel_params->mem_stride * 3 + kernel_params->mem_offset;
+    uint permute_id_0 = permute_id(id_0, kernel_params->permute_location, total_ids);
+    uint y_0 = (wg_offset + permute_id_0) * kernel_params->mem_stride * 3 + kernel_params->mem_offset;
+    uint z_0 = (wg_offset + permute_id(permute_id_0, kernel_params->permute_location, total_ids)) * kernel_params->mem_stride * 3 + 2 * kernel_params->mem_offset;
     uint permute_id_1 = permute_id(id_1, kernel_params->permute_location, total_ids);
     uint y_1 = (wg_offset + permute_id_1) * kernel_params->mem_stride * 3 + kernel_params->mem_offset;
     uint z_1 = (wg_offset + permute_id(permute_id_1, kernel_params->permute_location, total_ids)) * kernel_params->mem_stride * 3 + 2 * kernel_params->mem_offset;
     uint x_2 = (wg_offset + id_2) * kernel_params->mem_stride * 3;
     uint permute_id_2 = permute_id(id_2, kernel_params->permute_location, total_ids);
     uint z_2 = (wg_offset + permute_id(permute_id_2, kernel_params->permute_location, total_ids)) * kernel_params->mem_stride * 3 + 2 * kernel_params->mem_offset;
+
+    // Save threads and memory locations involved in a test instance
+    uint t_id = blockIdx.x * blockDim.x + threadIdx.x;
+    test_instances[id_0].t0 = t_id;
+    test_instances[id_1].t1 = t_id;
+    test_instances[id_2].t2 = t_id;
+    test_instances[id_0].x = x_0;
+    test_instances[id_0].y = y_0;
+    test_instances[id_0].z = z_0;
 
     if (kernel_params->pre_stress) {
       do_stress(scratchpad, scratch_locations, kernel_params->pre_stress_iterations, kernel_params->pre_stress_pattern);
@@ -179,7 +191,8 @@ __global__ void check_results(
   d_atomic_uint* test_locations,
   ReadResults* read_results,
   TestResults* test_results,
-  KernelParams* kernel_params) {
+  KernelParams* kernel_params,
+  bool* weak) {
   uint id_0 = blockIdx.x * blockDim.x + threadIdx.x;
   uint r0 = read_results[id_0].r0;
   uint r1 = read_results[id_0].r1;
@@ -204,7 +217,6 @@ __global__ void check_results(
   else if (r0 == 0 && r1 == 1 && r2 == 1) {
     test_results->res4.fetch_add(1);
   }
-
   else if (r0 == 1 && r1 == 0 && r2 == 0) {
     test_results->res5.fetch_add(1);
   }
@@ -213,6 +225,7 @@ __global__ void check_results(
   }
   else if (r0 == 1 && r1 == 1 && r2 == 0) {
     test_results->weak.fetch_add(1);
+    weak[id_0] = true;
   }
   else {
     test_results->other.fetch_add(1);

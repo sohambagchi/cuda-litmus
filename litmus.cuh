@@ -276,10 +276,17 @@ typedef cuda::atomic<uint> d_atomic_uint; // default, which is system too
 
 #define THREE_THREAD_TWO_MEM_LOCATIONS() \
   uint x_0 = (wg_offset + id_0) * kernel_params->mem_stride * 2; \
+  uint y_0 = (wg_offset + permute_id(id_0, kernel_params->permute_location, total_ids)) * kernel_params->mem_stride * 2 + kernel_params->mem_offset; \
   uint x_1 = (wg_offset + id_1) * kernel_params->mem_stride * 2; \
   uint y_1 = (wg_offset + permute_id(id_1, kernel_params->permute_location, total_ids)) * kernel_params->mem_stride * 2 + kernel_params->mem_offset; \
   uint x_2 = (wg_offset + id_2) * kernel_params->mem_stride * 2; \
-  uint y_2 = (wg_offset + permute_id(id_2, kernel_params->permute_location, total_ids)) * kernel_params->mem_stride * 2 + kernel_params->mem_offset;
+  uint y_2 = (wg_offset + permute_id(id_2, kernel_params->permute_location, total_ids)) * kernel_params->mem_stride * 2 + kernel_params->mem_offset; \
+  uint t_id = blockIdx.x * blockDim.x + threadIdx.x; \
+  test_instances[id_0].t0 = t_id; \
+  test_instances[id_1].t1 = t_id; \
+  test_instances[id_2].t2 = t_id; \
+  test_instances[id_0].x = x_0; \
+  test_instances[id_0].y = y_0;
 
 #define PRE_STRESS() \
   if (kernel_params->pre_stress) { \
@@ -363,7 +370,8 @@ __global__ void check_results(
   d_atomic_uint* test_locations,
   ReadResults* read_results,
   TestResults* test_results,
-  KernelParams* kernel_params);
+  KernelParams* kernel_params,
+  bool* weak);
 
 int host_check_results(TestResults* results, bool print);
 

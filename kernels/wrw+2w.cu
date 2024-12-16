@@ -9,7 +9,8 @@ __global__ void litmus_test(
   cuda::atomic<uint, cuda::thread_scope_device>* barrier,
   uint* scratchpad,
   uint* scratch_locations,
-  KernelParams* kernel_params) {
+  KernelParams* kernel_params,
+  TestInstance* test_instances) {
 
   uint shuffled_workgroup = shuffled_workgroups[blockIdx.x];
   if (shuffled_workgroup < kernel_params->testing_workgroups) {
@@ -100,7 +101,8 @@ __global__ void check_results(
   d_atomic_uint* test_locations,
   ReadResults* read_results,
   TestResults* test_results,
-  KernelParams* kernel_params) {
+  KernelParams* kernel_params,
+  bool* weak) {
   RESULT_IDS();
   uint id_0 = blockIdx.x * blockDim.x + threadIdx.x;
   uint r0 = read_results[id_0].r0;
@@ -145,8 +147,8 @@ __global__ void check_results(
   }
   else if (r0 == 2 && x == 2 && y == 2) { // this is the non-mca weak behavior
     test_results->weak.fetch_add(1);
+    weak[id_0] = true;
   }
-
   else if (x == 0 && y == 0) {
     test_results->na.fetch_add(1);
   }
