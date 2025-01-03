@@ -40,7 +40,7 @@ function random_config() {
   echo "workgroupSize=$workgroupSize" >> $PARAM_FILE
   echo "shufflePct=$(random_between 0 100)" >> $PARAM_FILE
   echo "barrierPct=$(random_between 0 100)" >> $PARAM_FILE
-  local stressLineSize=$(echo "$(random_between 2 10)^2" | bc)
+  local stressLineSize=$(( $(random_between 2 10) ** 2 ))
   echo "stressLineSize=$stressLineSize" >> $PARAM_FILE
   local stressTargetLines=$(random_between 1 16)
   echo "stressTargetLines=$stressTargetLines" >> $PARAM_FILE
@@ -70,7 +70,7 @@ function run_test() {
 
   echo "  Test $test-$tb-$scope-$fence_scope-$variant weak: $weak_behaviors, total: $total_behaviors, rate: $weak_rate per second"
 
-  if (( $(echo "$weak_rate > 0" | bc -l) )); then
+  if awk "BEGIN {exit !($weak_rate > 0)}"; then
     local test_result_dir="$RESULT_DIR/$test-$tb-$scope-$fence_scope-$variant"
     if [ ! -d "$test_result_dir" ] ; then
       mkdir "$test_result_dir"
@@ -78,7 +78,7 @@ function run_test() {
       echo $weak_rate > "$test_result_dir/rate"
     else
       local max_rate=$(cat "$test_result_dir/rate")
-      if (( $(echo "$weak_rate > $max_rate" | bc -l) )); then
+      if awk "BEGIN {exit !($weak_rate > $max_rate)}"; then
         cp $PARAM_FILE "$test_result_dir"
         echo $weak_rate > "$test_result_dir/rate"
       fi
