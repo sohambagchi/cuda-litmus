@@ -1,5 +1,4 @@
 // functions.cu
-#include "functions.cuh"
 __device__ uint permute_id(uint id, uint factor, uint mask) {
   return (id * factor) % mask;
 }

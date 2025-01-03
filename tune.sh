@@ -129,13 +129,13 @@ for test_file in "${test_files[@]}"; do
     for scope in ${scopes[@]}; do
       for variant in ${variants[@]}; do
         echo "Compiling $test-$tb-$scope-NO_FENCE-$variant runner"
-  	    nvcc -D$tb -D$scope -D$variant -I. -rdc=true -arch sm_80 runner.cu functions.cu "kernels/$test.cu" -o "$TARGET_DIR/$test-$tb-$scope-NO_FENCE-$variant-runner"
+  	    nvcc -D$tb -D$scope -D$variant -I. -rdc=true -arch sm_80 runner.cu "kernels/$test.cu" -o "$TARGET_DIR/$test-$tb-$scope-NO_FENCE-$variant-runner"
       done
       if [[ $(wc -l < $test_file) -ge 5 ]]; then
         for f_scope in ${fence_scopes[@]}; do
           for f_variant in ${fence_variants[@]}; do
             echo "Compiling $test-$tb-$scope-$f_scope-$f_variant runner"
-  	        nvcc -D$tb -D$scope -D$f_scope -D$f_variant -I. -rdc=true -arch sm_80 runner.cu functions.cu "kernels/$test.cu" -o "$TARGET_DIR/$test-$tb-$scope-$f_scope-$f_variant-runner"
+  	        nvcc -D$tb -D$scope -D$f_scope -D$f_variant -I. -rdc=true -arch sm_80 runner.cu "kernels/$test.cu" -o "$TARGET_DIR/$test-$tb-$scope-$f_scope-$f_variant-runner"
           done
         done
       fi

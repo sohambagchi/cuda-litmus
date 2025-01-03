@@ -110,7 +110,7 @@ fi
 readarray tests < $tuning_file
 
 if "$compile"; then
-for test in "${test_files[@]}"; do
+for test in "${tests[@]}"; do
   set -- $test
   test_name=$1
   tb=$3
@@ -118,8 +118,8 @@ for test in "${test_files[@]}"; do
   f_scope=$5
   variant=$6
   
-  echo "Compiling $test-$tb-$scope-NO_FENCE-$variant runner"
-  nvcc -D$tb -D$scope -D$f_scope -D$variant -I. -rdc=true -arch sm_80 runner.cu functions.cu "kernels/$test_name.cu" -o "$TARGET_DIR/$test_name-$tb-$scope-$f_scope-$variant-runner"
+  echo "Compiling $test_name-$tb-$scope-NO_FENCE-$variant runner"
+  nvcc -D$tb -D$scope -D$f_scope -D$variant -I. -rdc=true -arch sm_80 runner.cu "kernels/$test_name.cu" -o "$TARGET_DIR/$test_name-$tb-$scope-$f_scope-$variant-runner"
 done
 fi
 
@@ -129,7 +129,7 @@ while [ true ]
 do
   echo "Iteration: $iter"
   random_config 1024 256
-  for test in "${test_files[@]}"; do
+  for test in "${tests[@]}"; do
     set -- $test
     test_name=$1
     test_params=$2
