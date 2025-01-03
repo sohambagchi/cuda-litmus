@@ -78,7 +78,8 @@ def main():
             test_summaries["all"][machine]["ptx_allowed_seen"] += 1
             test_summaries["all"][machine]["ptx_matched"] += 1
             test_summaries[test_base][machine]["ptx_allowed_seen"] += 1
-      elif "RELAXED" in test:
+      #elif "RELAXED" in test:
+        continue
         print(f"Not seen relaxed on {machine}: {test}")
       else:
         if row["PTX"] == "disallowed":
@@ -91,7 +92,7 @@ def main():
         else:
           ptx_mca_allowed_matched = False
           ptx_mca_matched = False
-    if "RELAXED" not in test:    
+    if "RELAXED" not in test:
       if ptx_matched:
         test_summaries["all"]["ptx_matched"] += 1
       if ptx_mca_matched:

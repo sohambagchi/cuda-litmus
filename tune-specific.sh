@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Tune combinatorial space of tests
+## Tune specific versions of tests
 
 PARAM_FILE="params.txt"
 RESULT_DIR="results"
@@ -107,40 +107,19 @@ if [ $# == 2 ] ; then
   compile=false
 fi
 
-readarray test_files < $tuning_file
+readarray tests < $tuning_file
 
 if "$compile"; then
-for test_file in "${test_files[@]}"; do
-  read -a test_info <<< "$(sed -n '1p' $test_file)"
-  read -a threadblocks <<< "$(sed -n '2p' $test_file)"
-  read -a scopes <<< "$(sed -n '3p' $test_file)"
-  read -a variants <<< "$(sed -n '4p' $test_file)"
-
-  if [[ $(wc -l < $test_file) -ge 5 ]]; then
-    # Perform the command if the line count condition is met
-    read -a fence_scopes <<< "$(sed -n '5p' $test_file)"
-    read -a fence_variants <<< "$(sed -n '6p' $test_file)"
-  fi
-
-  test="${test_info[0]}"
-
-  # build binaries
-  for tb in ${threadblocks[@]}; do
-    for scope in ${scopes[@]}; do
-      for variant in ${variants[@]}; do
-        echo "Compiling $test-$tb-$scope-NO_FENCE-$variant runner"
-  	    nvcc -D$tb -D$scope -D$variant -I. -rdc=true -arch sm_80 runner.cu functions.cu "kernels/$test.cu" -o "$TARGET_DIR/$test-$tb-$scope-NO_FENCE-$variant-runner"
-      done
-      if [[ $(wc -l < $test_file) -ge 5 ]]; then
-        for f_scope in ${fence_scopes[@]}; do
-          for f_variant in ${fence_variants[@]}; do
-            echo "Compiling $test-$tb-$scope-$f_scope-$f_variant runner"
-  	        nvcc -D$tb -D$scope -D$f_scope -D$f_variant -I. -rdc=true -arch sm_80 runner.cu functions.cu "kernels/$test.cu" -o "$TARGET_DIR/$test-$tb-$scope-$f_scope-$f_variant-runner"
-          done
-        done
-      fi
-    done
-  done
+for test in "${test_files[@]}"; do
+  set -- $test
+  test_name=$1
+  tb=$3
+  scope=$4
+  f_scope=$5
+  variant=$6
+  
+  echo "Compiling $test-$tb-$scope-NO_FENCE-$variant runner"
+  nvcc -D$tb -D$scope -D$f_scope -D$variant -I. -rdc=true -arch sm_80 runner.cu functions.cu "kernels/$test_name.cu" -o "$TARGET_DIR/$test_name-$tb-$scope-$f_scope-$variant-runner"
 done
 fi
 
@@ -150,33 +129,16 @@ while [ true ]
 do
   echo "Iteration: $iter"
   random_config 1024 256
-  for test_file in "${test_files[@]}"; do
-    read -a test_info <<< "$(sed -n '1p' $test_file)"
-    read -a threadblocks <<< "$(sed -n '2p' $test_file)"
-    read -a scopes <<< "$(sed -n '3p' $test_file)"
-    read -a variants <<< "$(sed -n '4p' $test_file)"
-    if [[ $(wc -l < $test_file) -ge 5 ]]; then
-      read -a fence_scopes <<< "$(sed -n '5p' $test_file)"
-      read -a fence_variants <<< "$(sed -n '6p' $test_file)"
-    fi
+  for test in "${test_files[@]}"; do
+    set -- $test
+    test_name=$1
+    test_params=$2
+    tb=$3
+    scope=$4
+    f_scope=$5
+    variant=$6
 
-    test="${test_info[0]}"
-    params="${test_info[1]}"
-
-    for tb in ${threadblocks[@]}; do
-      for scope in ${scopes[@]}; do
-        for variant in ${variants[@]}; do
-          run_test $test $tb $scope NO_FENCE $variant $params
-        done
-        if [[ $(wc -l < $test_file) -ge 5 ]]; then
-          for f_scope in ${fence_scopes[@]}; do
-            for f_variant in ${fence_variants[@]}; do
-              run_test $test $tb $scope $f_scope $f_variant $params
-            done
-          done
-        fi
-      done
-    done
+    run_test $test_name $tb $scope $f_scope $variant $test_params
   done
   iter=$((iter + 1))
 done
