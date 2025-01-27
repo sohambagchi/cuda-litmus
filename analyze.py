@@ -63,6 +63,7 @@ def analyze(file_path):
       total_value = int(parts[5].strip(','))  # Extract the "total" value
 
       if weak_value > 0:
+        print(test_name)
         all_tests[lean_test_name] = True
         if test_name in unexpected_non_weak:
          test_summaries[test_base]["actual_weak"] += 1
@@ -74,7 +75,7 @@ def analyze(file_path):
         if "SCOPE_BLOCK-FENCE_SCOPE_DEVICE" in test_name or "SCOPE_BLOCK-FENCE_SCOPE_SYSTEM" in test_name:
           a_block_f_sys_dev_weak.add(test_name)
         # Tests that are not block scoped or relaxed should not see weak behaviors
-        if "SCOPE_BLOCK" not in test_name and "RELAXED" not in test_name and "STORE_SC" not in test_name:
+        if "SCOPE_BLOCK" not in test_name and "RELAXED" not in test_name and "STORE_SC" not in test_name and test_name not in unexpected_weak:
           test_summaries[test_base]["actual_non_weak"] -= 1
           test_summaries["all"]["actual_non_weak"] -= 1
           unexpected_weak.add(test_name)
