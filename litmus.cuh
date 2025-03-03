@@ -288,6 +288,25 @@ typedef cuda::atomic<uint> d_atomic_uint; // default, which is system too
   test_instances[id_0].x = x_0; \
   test_instances[id_0].y = y_0;
 
+#define THREE_THREAD_THREE_MEM_LOCATIONS() \
+  uint x_0 = (wg_offset + id_0) * kernel_params->mem_stride * 3; \
+  uint permute_id_0 = permute_id(id_0, kernel_params->permute_location, total_ids); \
+  uint y_0 = (wg_offset + permute_id_0) * kernel_params->mem_stride * 3 + kernel_params->mem_offset; \
+  uint z_0 = (wg_offset + permute_id(permute_id_0, kernel_params->permute_location, total_ids)) * kernel_params->mem_stride * 3 + 2 * kernel_params->mem_offset; \
+  uint permute_id_1 = permute_id(id_1, kernel_params->permute_location, total_ids); \
+  uint y_1 = (wg_offset + permute_id_1) * kernel_params->mem_stride * 3 + kernel_params->mem_offset; \
+  uint z_1 = (wg_offset + permute_id(permute_id_1, kernel_params->permute_location, total_ids)) * kernel_params->mem_stride * 3 + 2 * kernel_params->mem_offset; \
+  uint x_2 = (wg_offset + id_2) * kernel_params->mem_stride * 3; \
+  uint permute_id_2 = permute_id(id_2, kernel_params->permute_location, total_ids); \
+  uint z_2 = (wg_offset + permute_id(permute_id_2, kernel_params->permute_location, total_ids)) * kernel_params->mem_stride * 3 + 2 * kernel_params->mem_offset; \
+  uint t_id = blockIdx.x * blockDim.x + threadIdx.x; \
+  test_instances[id_0].t0 = t_id; \
+  test_instances[id_1].t1 = t_id; \
+  test_instances[id_2].t2 = t_id; \
+  test_instances[id_0].x = x_0; \
+  test_instances[id_0].y = y_0; \
+  test_instances[id_0].z = z_0;
+
 #define PRE_STRESS() \
   if (kernel_params->pre_stress) { \
     do_stress(scratchpad, scratch_locations, kernel_params->pre_stress_iterations, kernel_params->pre_stress_pattern); \

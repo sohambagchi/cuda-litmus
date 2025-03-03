@@ -29,8 +29,8 @@ __global__ void litmus_test(
     // defined for different distributions of threads across threadblocks
     DEFINE_IDS();
 
-    // defined for all three thread two memory locations tests
-    THREE_THREAD_TWO_MEM_LOCATIONS();
+    // defined for all three thread three memory locations tests
+    THREE_THREAD_THREE_MEM_LOCATIONS();
 
     PRE_STRESS();
 
