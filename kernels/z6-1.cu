@@ -62,10 +62,11 @@ __global__ void check_results(
   TestResults* test_results,
   KernelParams* kernel_params,
   bool* weak) {
+  RESULT_IDS();
   uint id_0 = blockIdx.x * blockDim.x + threadIdx.x;
   uint r0 = read_results[id_0].r0;
-  uint x = test_locations[id_0 * kernel_params->mem_stride * 2];
-  uint y_loc = (wg_offset + permute_id(id_0, kernel_params->permute_location, total_ids)) * kernel_params->mem_stride * 2 + kernel_params->mem_offset;
+  uint x = test_locations[id_0 * kernel_params->mem_stride * 3];
+  uint y_loc = (wg_offset + permute_id(id_0, kernel_params->permute_location, total_ids)) * kernel_params->mem_stride * 3 + kernel_params->mem_offset;
   uint y = test_locations[y_loc];
 
   if (x == 0) {
