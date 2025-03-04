@@ -3,6 +3,144 @@
 #include "functions.cu"
 
 __global__ void litmus_test(
+
+  #ifdef FENCE_RLX_THREAD
+    #define FENCE_P() cuda::atomic_thread_fence(cuda::memory_order_relaxed, cuda::thread_scope_thread);
+    #define FENCE_C() cuda::atomic_thread_fence(cuda::memory_order_relaxed, cuda::thread_scope_thread);
+  #elif defined(FENCE_RLX_BLOCK)
+    #define FENCE_P() cuda::atomic_thread_fence(cuda::memory_order_relaxed, cuda::thread_scope_block);
+    #define FENCE_C() cuda::atomic_thread_fence(cuda::memory_order_relaxed, cuda::thread_scope_block);
+  #elif defined(FENCE_RLX_DEVICE)
+    #define FENCE_P() cuda::atomic_thread_fence(cuda::memory_order_relaxed, cuda::thread_scope_device);
+    #define FENCE_C() cuda::atomic_thread_fence(cuda::memory_order_relaxed, cuda::thread_scope_device);
+  #elif defined(FENCE_RLX_SYSTEM)
+    #define FENCE_P() cuda::atomic_thread_fence(cuda::memory_order_relaxed, cuda::thread_scope_system);
+    #define FENCE_C() cuda::atomic_thread_fence(cuda::memory_order_relaxed, cuda::thread_scope_system);
+  #elif defined(FENCE_ACQ_THREAD)
+    #define FENCE_P() cuda::atomic_thread_fence(cuda::memory_order_acquire, cuda::thread_scope_thread);
+    #define FENCE_C() cuda::atomic_thread_fence(cuda::memory_order_acquire, cuda::thread_scope_thread);
+  #elif defined(FENCE_ACQ_BLOCK)
+    #define FENCE_P() cuda::atomic_thread_fence(cuda::memory_order_acquire, cuda::thread_scope_block);
+    #define FENCE_C() cuda::atomic_thread_fence(cuda::memory_order_acquire, cuda::thread_scope_block);
+  #elif defined(FENCE_ACQ_DEVICE)
+    #define FENCE_P() cuda::atomic_thread_fence(cuda::memory_order_acquire, cuda::thread_scope_device);
+    #define FENCE_C() cuda::atomic_thread_fence(cuda::memory_order_acquire, cuda::thread_scope_device);
+  #elif defined(FENCE_ACQ_SYSTEM)
+    #define FENCE_P() cuda::atomic_thread_fence(cuda::memory_order_acquire, cuda::thread_scope_system);
+    #define FENCE_C() cuda::atomic_thread_fence(cuda::memory_order_acquire, cuda::thread_scope_system);
+  #elif defined(FENCE_REL_THREAD)
+    #define FENCE_P() cuda::atomic_thread_fence(cuda::memory_order_release, cuda::thread_scope_thread);
+    #define FENCE_C() cuda::atomic_thread_fence(cuda::memory_order_release, cuda::thread_scope_thread);
+  #elif defined(FENCE_REL_BLOCK)
+    #define FENCE_P() cuda::atomic_thread_fence(cuda::memory_order_release, cuda::thread_scope_block);
+    #define FENCE_C() cuda::atomic_thread_fence(cuda::memory_order_release, cuda::thread_scope_block);
+  #elif defined(FENCE_REL_DEVICE)
+    #define FENCE_P() cuda::atomic_thread_fence(cuda::memory_order_release, cuda::thread_scope_device);
+    #define FENCE_C() cuda::atomic_thread_fence(cuda::memory_order_release, cuda::thread_scope_device);
+  #elif defined(FENCE_REL_SYSTEM)
+    #define FENCE_P() cuda::atomic_thread_fence(cuda::memory_order_release, cuda::thread_scope_system);
+    #define FENCE_C() cuda::atomic_thread_fence(cuda::memory_order_release, cuda::thread_scope_system);
+  #elif defined(FENCE_ACQ_REL_THREAD)
+    #define FENCE_P() cuda::atomic_thread_fence(cuda::memory_order_acq_rel, cuda::thread_scope_thread);
+    #define FENCE_C() cuda::atomic_thread_fence(cuda::memory_order_acq_rel, cuda::thread_scope_thread);
+  #elif defined(FENCE_ACQ_REL_BLOCK)
+    #define FENCE_P() cuda::atomic_thread_fence(cuda::memory_order_acq_rel, cuda::thread_scope_block);
+    #define FENCE_C() cuda::atomic_thread_fence(cuda::memory_order_acq_rel, cuda::thread_scope_block);
+  #elif defined(FENCE_ACQ_REL_DEVICE)
+    #define FENCE_P() cuda::atomic_thread_fence(cuda::memory_order_acq_rel, cuda::thread_scope_device);
+    #define FENCE_C() cuda::atomic_thread_fence(cuda::memory_order_acq_rel, cuda::thread_scope_device);
+  #elif defined(FENCE_ACQ_REL_SYSTEM)
+    #define FENCE_P() cuda::atomic_thread_fence(cuda::memory_order_acq_rel, cuda::thread_scope_system);
+    #define FENCE_C() cuda::atomic_thread_fence(cuda::memory_order_acq_rel, cuda::thread_scope_system);
+  #elif defined(FENCE_SC_THREAD)
+    #define FENCE_P() cuda::atomic_thread_fence(cuda::memory_order_seq_cst, cuda::thread_scope_thread);
+    #define FENCE_C() cuda::atomic_thread_fence(cuda::memory_order_seq_cst, cuda::thread_scope_thread);
+  #elif defined(FENCE_SC_BLOCK)
+    #define FENCE_P() cuda::atomic_thread_fence(cuda::memory_order_seq_cst, cuda::thread_scope_block);
+    #define FENCE_C() cuda::atomic_thread_fence(cuda::memory_order_seq_cst, cuda::thread_scope_block);
+  #elif defined(FENCE_SC_DEVICE)
+    #define FENCE_P() cuda::atomic_thread_fence(cuda::memory_order_seq_cst, cuda::thread_scope_device);
+    #define FENCE_C() cuda::atomic_thread_fence(cuda::memory_order_seq_cst, cuda::thread_scope_device);
+  #elif defined(FENCE_SC_SYSTEM)
+    #define FENCE_P() cuda::atomic_thread_fence(cuda::memory_order_seq_cst, cuda::thread_scope_system);
+    #define FENCE_C() cuda::atomic_thread_fence(cuda::memory_order_seq_cst, cuda::thread_scope_system);
+  #elif defined(FENCE_A_P_RLX_THREAD)
+    #define FENCE_P() cuda::atomic_thread_fence(cuda::memory_order_relaxed, cuda::thread_scope_thread);
+    #define FENCE_C()
+  #elif defined(FENCE_A_P_RLX_BLOCK)
+    #define FENCE_P() cuda::atomic_thread_fence(cuda::memory_order_relaxed, cuda::thread_scope_block);
+    #define FENCE_C()
+  #elif defined(FENCE_A_P_RLX_DEVICE)
+    #define FENCE_P() cuda::atomic_thread_fence(cuda::memory_order_relaxed, cuda::thread_scope_device);
+    #define FENCE_C()
+  #elif defined(FENCE_A_P_RLX_SYSTEM)
+    #define FENCE_P() cuda::atomic_thread_fence(cuda::memory_order_relaxed, cuda::thread_scope_system);
+    #define FENCE_C()
+  #elif defined(FENCE_A_C_RLX_THREAD)
+    #define FENCE_P()
+    #define FENCE_C() cuda::atomic_thread_fence(cuda::memory_order_relaxed, cuda::thread_scope_thread);
+  #elif defined(FENCE_A_C_RLX_BLOCK)
+    #define FENCE_P()
+    #define FENCE_C() cuda::atomic_thread_fence(cuda::memory_order_relaxed, cuda::thread_scope_block);
+  #elif defined(FENCE_A_C_RLX_DEVICE) 
+    #define FENCE_P()
+    #define FENCE_C() cuda::atomic_thread_fence(cuda::memory_order_relaxed, cuda::thread_scope_device);
+  #elif defined(FENCE_A_C_RLX_SYSTEM)
+    #define FENCE_P()
+    #define FENCE_C() cuda::atomic_thread_fence(cuda::memory_order_relaxed, cuda::thread_scope_system);
+  #elif defined(FENCE_A_P_ACQ_REL_THREAD)
+    #define FENCE_P() cuda::atomic_thread_fence(cuda::memory_order_acq_rel, cuda::thread_scope_thread);
+    #define FENCE_C()
+  #elif defined(FENCE_A_P_ACQ_REL_BLOCK)
+    #define FENCE_P() cuda::atomic_thread_fence(cuda::memory_order_acq_rel, cuda::thread_scope_block);
+    #define FENCE_C()
+  #elif defined(FENCE_A_P_ACQ_REL_DEVICE)
+    #define FENCE_P() cuda::atomic_thread_fence(cuda::memory_order_acq_rel, cuda::thread_scope_device);
+    #define FENCE_C()
+  #elif defined(FENCE_A_P_ACQ_REL_SYSTEM)
+    #define FENCE_P() cuda::atomic_thread_fence(cuda::memory_order_acq_rel, cuda::thread_scope_system);
+    #define FENCE_C()
+  #elif defined(FENCE_A_C_ACQ_REL_THREAD)
+    #define FENCE_P()
+    #define FENCE_C() cuda::atomic_thread_fence(cuda::memory_order_acq_rel, cuda::thread_scope_thread);
+  #elif defined(FENCE_A_C_ACQ_REL_BLOCK)
+    #define FENCE_P()
+    #define FENCE_C() cuda::atomic_thread_fence(cuda::memory_order_acq_rel, cuda::thread_scope_block);
+  #elif defined(FENCE_A_C_ACQ_REL_DEVICE)
+    #define FENCE_P()
+    #define FENCE_C() cuda::atomic_thread_fence(cuda::memory_order_acq_rel, cuda::thread_scope_device);
+  #elif defined(FENCE_A_C_ACQ_REL_SYSTEM)
+    #define FENCE_P()
+    #define FENCE_C() cuda::atomic_thread_fence(cuda::memory_order_acq_rel, cuda::thread_scope_system);
+  #elif defined(FENCE_A_P_SC_THREAD)
+    #define FENCE_P() cuda::atomic_thread_fence(cuda::memory_order_seq_cst, cuda::thread_scope_thread);
+    #define FENCE_C()
+  #elif defined(FENCE_A_P_SC_BLOCK)
+    #define FENCE_P() cuda::atomic_thread_fence(cuda::memory_order_seq_cst, cuda::thread_scope_block);
+    #define FENCE_C()
+  #elif defined(FENCE_A_P_SC_DEVICE)
+    #define FENCE_P() cuda::atomic_thread_fence(cuda::memory_order_seq_cst, cuda::thread_scope_device);
+    #define FENCE_C()
+  #elif defined(FENCE_A_P_SC_SYSTEM)
+    #define FENCE_P() cuda::atomic_thread_fence(cuda::memory_order_seq_cst, cuda::thread_scope_system);
+    #define FENCE_C()
+  #elif defined(FENCE_A_C_SC_THREAD)
+    #define FENCE_P()
+    #define FENCE_C() cuda::atomic_thread_fence(cuda::memory_order_seq_cst, cuda::thread_scope_thread);
+  #elif defined(FENCE_A_C_SC_BLOCK)
+    #define FENCE_P()
+    #define FENCE_C() cuda::atomic_thread_fence(cuda::memory_order_seq_cst, cuda::thread_scope_block);
+  #elif defined(FENCE_A_C_SC_DEVICE)  
+    #define FENCE_P()
+    #define FENCE_C() cuda::atomic_thread_fence(cuda::memory_order_seq_cst, cuda::thread_scope_device);
+  #elif defined(FENCE_A_C_SC_SYSTEM)
+    #define FENCE_P()
+    #define FENCE_C() cuda::atomic_thread_fence(cuda::memory_order_seq_cst, cuda::thread_scope_system);
+  #elif defined(NO_FENCE)
+    #define FENCE_P()
+    #define FENCE_C()
+  #endif
+
   d_atomic_uint* test_locations,
   ReadResults* read_results,
   uint* shuffled_workgroups,
@@ -32,9 +170,11 @@ __global__ void litmus_test(
     if (id_0 != id_1) {
 
       test_locations[x_0].store(1, cuda::memory_order_relaxed);
-      test_locations[y_0].store(1, cuda::memory_order_release);
+      FENCE_P();
+      test_locations[y_0].store(1, cuda::memory_order_relaxed);
 
-      uint r0 = test_locations[y_1].load(cuda::memory_order_acquire);
+      uint r0 = test_locations[y_1].load(cuda::memory_order_relaxed);
+      FENCE_C();
       uint r1 = test_locations[x_1].load(cuda::memory_order_relaxed);
 
       cuda::atomic_thread_fence(cuda::memory_order_seq_cst);
