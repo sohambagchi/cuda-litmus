@@ -11,6 +11,8 @@ typedef cuda::atomic<uint, cuda::thread_scope_device> d_atomic_uint;
 typedef cuda::atomic<uint, cuda::thread_scope_block> d_atomic_uint;
 #elif defined(SCOPE_SYSTEM)
 typedef cuda::atomic<uint, cuda::thread_scope_system> d_atomic_uint;
+#elif defined(SCOPE_CTA)
+typedef cuda::atomic<uint, cuda::thread_scope_thread> d_atomic_uint;
 #else
 typedef cuda::atomic<uint> d_atomic_uint; // default, which is system too
 #endif
