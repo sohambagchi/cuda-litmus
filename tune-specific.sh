@@ -117,8 +117,8 @@ for test in "${tests[@]}"; do
   scope=$4
   f_scope=$5
   variant=$6
-  
-  echo "Compiling $test_name-$tb-$scope-NO_FENCE-$variant runner"
+
+  echo "Compiling $test_name-$tb-$scope-$f_scope-$variant runner"
   nvcc -D$tb -D$scope -D$f_scope -D$variant -I. -rdc=true -arch sm_80 runner.cu "kernels/$test_name.cu" -o "$TARGET_DIR/$test_name-$tb-$scope-$f_scope-$variant-runner"
 done
 fi
