@@ -78,12 +78,15 @@ __global__ void check_results(
   TestResults* test_results,
   KernelParams* kernel_params,
   bool* weak) {
+  uint total_ids = blockDim.x * kernel_params->testing_workgroups;
   uint id_0 = blockIdx.x * blockDim.x + threadIdx.x;
   uint x = test_locations[id_0 * kernel_params->mem_stride * 4];
   uint r0 = read_results[id_0].r0;
   uint r1 = read_results[id_0].r1;
   uint r2 = read_results[id_0].r2;
-  uint z = test_locations[id_0 * kernel_params->mem_stride * 4 + 2 * kernel_params->mem_offset];
+  uint permute_id_0 = permute_id(id_0, kernel_params->permute_location, total_ids);
+  uint z_loc = permute_id(permute_id_0, kernel_params->permute_location, total_ids) * kernel_params->mem_stride * 4 + 2 * kernel_params->mem_offset;
+  uint z = test_locations[z_loc];
 
   if (x == 0) {
     test_results->na.fetch_add(1); // thread skipped
