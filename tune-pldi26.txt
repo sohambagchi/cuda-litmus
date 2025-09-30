@@ -1,3 +1,5 @@
 tuning-files/z6-3.txt
 tuning-files/iriw-limited.txt
 tuning-files/wrc-limited.txt
+tuning-files/2+2w.txt
+tuning-files/3.2w.txt
