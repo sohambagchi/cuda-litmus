@@ -69,7 +69,7 @@ __global__ void check_results(
   uint permute_id_0 = permute_id(id_0, kernel_params->permute_location, total_ids);
   uint y_loc = (wg_offset + permute_id_0) * kernel_params->mem_stride * 3 + kernel_params->mem_offset;
   uint y = test_locations[y_loc];
-  uint z_loc = wg_offset + permute_id(permute_id_0, kernel_params->permute_location, total_ids) * kernel_params->mem_stride * 3 + 2 * kernel_params->mem_offset;
+  uint z_loc = (wg_offset + permute_id(permute_id_0, kernel_params->permute_location, total_ids)) * kernel_params->mem_stride * 3 + 2 * kernel_params->mem_offset;
   uint z = test_locations[z_loc];
 
   if (x == 0) {
