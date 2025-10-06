@@ -1,0 +1,4 @@
+paper-example1 4-loc.txt
+TB_0_1_2_3
+SCOPE_DEVICE
+RELAXED DISALLOWED

@@ -16,17 +16,35 @@ __global__ void litmus_test(
   if (shuffled_workgroup < kernel_params->testing_workgroups) {
 
 #ifdef RELEASE
-    cuda::memory_order store_order = cuda::memory_order_release;
-    #define FENCE()
+    cuda::memory_order store_order0 = cuda::memory_order_release;
+    cuda::memory_order store_order1 = cuda::memory_order_release;
+    #define FENCE0()
+    #define FENCE1()
 #elif defined(RELAXED)
-    cuda::memory_order store_order = cuda::memory_order_relaxed;
-    #define FENCE()
+    cuda::memory_order store_order0 = cuda::memory_order_relaxed;
+    cuda::memory_order store_order1 = cuda::memory_order_relaxed;
+    #define FENCE0()
+    #define FENCE1()
 #elif defined(BOTH_FENCE)
-    cuda::memory_order store_order = cuda::memory_order_relaxed;
-    #define FENCE() cuda::atomic_thread_fence(cuda::memory_order_acq_rel, FENCE_SCOPE);
+    cuda::memory_order store_order0 = cuda::memory_order_relaxed;
+    cuda::memory_order store_order1 = cuda::memory_order_relaxed;
+    #define FENCE0() cuda::atomic_thread_fence(cuda::memory_order_acq_rel, FENCE_SCOPE);
+    #define FENCE1() cuda::atomic_thread_fence(cuda::memory_order_acq_rel, FENCE_SCOPE);
+#elif defined(FENCE_0)
+    cuda::memory_order store_order0 = cuda::memory_order_relaxed;
+    cuda::memory_order store_order1 = cuda::memory_order_release;
+    #define FENCE0() cuda::atomic_thread_fence(cuda::memory_order_acq_rel, FENCE_SCOPE);
+    #define FENCE1()
+#elif defined(FENCE_1)
+    cuda::memory_order store_order0 = cuda::memory_order_release;
+    cuda::memory_order store_order1 = cuda::memory_order_relaxed;
+    #define FENCE0()
+    #define FENCE1() cuda::atomic_thread_fence(cuda::memory_order_acq_rel, FENCE_SCOPE);
 #else
-    cuda::memory_order store_order = cuda::memory_order_relaxed;
-    #define FENCE()
+    cuda::memory_order store_order0 = cuda::memory_order_relaxed;
+    cuda::memory_order store_order1 = cuda::memory_order_relaxed;
+    #define FENCE0()
+    #define FENCE1()
 #endif
 
     // defined for different distributions of threads across threadblocks
@@ -43,13 +61,13 @@ __global__ void litmus_test(
 
       // Thread 0
       test_locations[x_0].store(1, cuda::memory_order_relaxed);
-      FENCE()
-      test_locations[y_0].store(2, store_order);
+      FENCE0()
+      test_locations[y_0].store(2, store_order0);
 
       // Thread 1
       test_locations[y_1].store(1, cuda::memory_order_relaxed);
-      FENCE()
-      test_locations[x_1].store(2, store_order);
+      FENCE1()
+      test_locations[x_1].store(2, store_order1);
     }
   }
 

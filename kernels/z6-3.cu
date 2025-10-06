@@ -15,79 +15,76 @@ __global__ void litmus_test(
   uint shuffled_workgroup = shuffled_workgroups[blockIdx.x];
   if (shuffled_workgroup < kernel_params->testing_workgroups) {
 
-#ifdef ACQ_REL01
+#ifdef ACQ_REL
     cuda::memory_order store_order0 = cuda::memory_order_release;
     cuda::memory_order store_order1 = cuda::memory_order_release;
     cuda::memory_order load_order = cuda::memory_order_acquire;
-    #define FENCE()
-#elif defined(ACQ_REL0)
-    cuda::memory_order store_order0 = cuda::memory_order_release;
-    cuda::memory_order store_order1 = cuda::memory_order_relaxed;
-    cuda::memory_order load_order = cuda::memory_order_acquire;
-    #define FENCE()
-#elif defined(ACQ_REL1)
-    cuda::memory_order store_order0 = cuda::memory_order_relaxed;
-    cuda::memory_order store_order1 = cuda::memory_order_release;
-    cuda::memory_order load_order = cuda::memory_order_acquire;
-    #define FENCE()
-#elif defined(RELEASE01)
-    cuda::memory_order store_order0 = cuda::memory_order_release;
-    cuda::memory_order store_order1 = cuda::memory_order_release;
-    cuda::memory_order load_order = cuda::memory_order_relaxed;
-    #define FENCE()
-#elif defined(ACQUIRE)
-    cuda::memory_order store_order0 = cuda::memory_order_relaxed;
-    cuda::memory_order store_order1 = cuda::memory_order_relaxed;
-    cuda::memory_order load_order = cuda::memory_order_acquire;
-    #define FENCE()
-#elif defined(RELEASE0)
-    cuda::memory_order store_order0 = cuda::memory_order_release;
-    cuda::memory_order store_order1 = cuda::memory_order_relaxed;
-    cuda::memory_order load_order = cuda::memory_order_relaxed;
-    #define FENCE()
-#elif defined(RELEASE1)
-    cuda::memory_order store_order0 = cuda::memory_order_relaxed;
-    cuda::memory_order store_order1 = cuda::memory_order_release;
-    cuda::memory_order load_order = cuda::memory_order_relaxed;
-    #define FENCE()
+    #define FENCE0()
+    #define FENCE1()
+    #define FENCE2()
 #elif defined(RELAXED)
     cuda::memory_order store_order0 = cuda::memory_order_relaxed;
     cuda::memory_order store_order1 = cuda::memory_order_relaxed;
     cuda::memory_order load_order = cuda::memory_order_relaxed;
-    #define FENCE()
+    #define FENCE0()
+    #define FENCE1()
+    #define FENCE2()
 #elif defined(ALL_FENCE)
     cuda::memory_order store_order0 = cuda::memory_order_relaxed;
     cuda::memory_order store_order1 = cuda::memory_order_relaxed;
     cuda::memory_order load_order = cuda::memory_order_relaxed;
-    #define FENCE() cuda::atomic_thread_fence(cuda::memory_order_acq_rel, FENCE_SCOPE);
-#elif defined(Z_SCOPE_BLOCK)
+    #define FENCE0() cuda::atomic_thread_fence(cuda::memory_order_acq_rel, FENCE_SCOPE);
+    #define FENCE1() cuda::atomic_thread_fence(cuda::memory_order_acq_rel, FENCE_SCOPE);
+    #define FENCE2() cuda::atomic_thread_fence(cuda::memory_order_acq_rel, FENCE_SCOPE);
+#elif defined(FENCE_0)
     cuda::memory_order store_order0 = cuda::memory_order_relaxed;
     cuda::memory_order store_order1 = cuda::memory_order_release;
     cuda::memory_order load_order = cuda::memory_order_acquire;
-    #define FENCE()
+    #define FENCE0() cuda::atomic_thread_fence(cuda::memory_order_acq_rel, FENCE_SCOPE);
+    #define FENCE1()
+    #define FENCE2()
+#elif defined(FENCE_1)
+    cuda::memory_order store_order0 = cuda::memory_order_release;
+    cuda::memory_order store_order1 = cuda::memory_order_relaxed;
+    cuda::memory_order load_order = cuda::memory_order_acquire;
+    #define FENCE0()
+    #define FENCE1() cuda::atomic_thread_fence(cuda::memory_order_acq_rel, FENCE_SCOPE);
+    #define FENCE2()
+#elif defined(FENCE_2)
+    cuda::memory_order store_order0 = cuda::memory_order_release;
+    cuda::memory_order store_order1 = cuda::memory_order_release;
+    cuda::memory_order load_order = cuda::memory_order_relaxed;
+    #define FENCE0()
+    #define FENCE1()
+    #define FENCE2() cuda::atomic_thread_fence(cuda::memory_order_acq_rel, FENCE_SCOPE);
+#elif defined(FENCE_01)
+    cuda::memory_order store_order0 = cuda::memory_order_relaxed;
+    cuda::memory_order store_order1 = cuda::memory_order_relaxed;
+    cuda::memory_order load_order = cuda::memory_order_acquire;
+    #define FENCE0() cuda::atomic_thread_fence(cuda::memory_order_acq_rel, FENCE_SCOPE);
+    #define FENCE1() cuda::atomic_thread_fence(cuda::memory_order_acq_rel, FENCE_SCOPE);
+    #define FENCE2()
+#elif defined(FENCE_02)
+    cuda::memory_order store_order0 = cuda::memory_order_relaxed;
+    cuda::memory_order store_order1 = cuda::memory_order_release;
+    cuda::memory_order load_order = cuda::memory_order_relaxed;
+    #define FENCE0() cuda::atomic_thread_fence(cuda::memory_order_acq_rel, FENCE_SCOPE);
+    #define FENCE1()
+    #define FENCE2() cuda::atomic_thread_fence(cuda::memory_order_acq_rel, FENCE_SCOPE);
+#elif defined(FENCE_12)
+    cuda::memory_order store_order0 = cuda::memory_order_release;
+    cuda::memory_order store_order1 = cuda::memory_order_relaxed;
+    cuda::memory_order load_order = cuda::memory_order_relaxed;
+    #define FENCE0()
+    #define FENCE1() cuda::atomic_thread_fence(cuda::memory_order_acq_rel, FENCE_SCOPE);
+    #define FENCE2() cuda::atomic_thread_fence(cuda::memory_order_acq_rel, FENCE_SCOPE);
 #else
     cuda::memory_order store_order0 = cuda::memory_order_relaxed;
     cuda::memory_order store_order1 = cuda::memory_order_relaxed;
     cuda::memory_order load_order = cuda::memory_order_relaxed;
-    #define FENCE()
-#endif
-
-// special scoping for z6-3 where threads 1 and 2 are in same cta
-#ifdef Z_SCOPE_BLOCK
-    const cuda::thread_scope Z_1_SCOPE = cuda::thread_scope_block;
-    const cuda::thread_scope Z_2_SCOPE = cuda::thread_scope_block;
-#elif defined(SCOPE_DEVICE)
-    const cuda::thread_scope Z_1_SCOPE = cuda::thread_scope_device;
-    const cuda::thread_scope Z_2_SCOPE = cuda::thread_scope_device;
-#elif defined(SCOPE_BLOCK)
-    const cuda::thread_scope Z_1_SCOPE = cuda::thread_scope_block;
-    const cuda::thread_scope Z_2_SCOPE = cuda::thread_scope_block;
-#elif defined(SCOPE_SYSTEM)
-    const cuda::thread_scope Z_1_SCOPE = cuda::thread_scope_system;
-    const cuda::thread_scope Z_2_SCOPE = cuda::thread_scope_system;
-#else
-    const cuda::thread_scope Z_1_SCOPE = cuda::thread_scope_system;
-    const cuda::thread_scope Z_2_SCOPE = cuda::thread_scope_system;
+    #define FENCE0()
+    #define FENCE1()
+    #define FENCE2()
 #endif
 
     // defined for different distributions of threads across threadblocks
@@ -96,26 +93,23 @@ __global__ void litmus_test(
     // defined for all three thread three memory locations tests
     THREE_THREAD_THREE_MEM_LOCATIONS();
 
-    cuda::atomic<uint, Z_1_SCOPE>* z_1_ptr = (cuda::atomic<uint, Z_1_SCOPE>*) &test_locations[z_1];
-    cuda::atomic<uint, Z_2_SCOPE>* z_2_ptr = (cuda::atomic<uint, Z_2_SCOPE>*) &test_locations[z_2];
-
     PRE_STRESS();
 
     if (id_0 != id_1 && id_1 != id_2 && id_0 != id_2) {
 
       // Thread 0
       test_locations[x_0].store(1, cuda::memory_order_relaxed);
-      FENCE()
+      FENCE0()
       test_locations[y_0].store(1, store_order0);
 
       // Thread 1
       test_locations[y_1].store(2, cuda::memory_order_relaxed);
-      FENCE()
-      z_1_ptr->store(1, store_order1);
+      FENCE1()
+      test_locations[z_1].store(1, store_order1);
 
       // Thread 2
-      uint r0 = z_2_ptr->load(load_order);
-      FENCE()
+      uint r0 = test_locations[z_2].load(load_order);
+      FENCE2()
       uint r1 = test_locations[x_2].load(cuda::memory_order_relaxed);
 
       cuda::atomic_thread_fence(cuda::memory_order_seq_cst);
