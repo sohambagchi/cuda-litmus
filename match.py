@@ -24,6 +24,12 @@ def main():
       test_base = "wrw+2w"
     if test_base == "paper":
       test_base = "paper-example"
+    if test_base = "two":
+      test_base = "2+2w"
+    if test_base = "three":
+      test_base = "3.2w"
+    if test_base = "z6":
+      test_base = "z6-3"
 
     if test_base not in test_summaries:
       test_summaries[test_base] = {"tests": 0, "relaxed_tests": 0, "ptx_allowed": 0, "ptx_mca_allowed": 0, "ampere_seen": 0, "hopper_seen": 0}
