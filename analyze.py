@@ -29,7 +29,12 @@ def analyze(file_path):
       parts = line.strip().split()
       test_name = parts[1]  # Test name
       test_rate = int(re.search(r"rate: (\d+) per second", line.strip()).group(1))
-      lean_test_name = test_name.replace("-", "_").replace("+", "_")
+      lean_test_name = test_name.replace("-", "_").replace("+", "_").replace(".", "_")
+      # Handle some test name reformatting
+      if lean_test_name.split("_")[0] == "3":
+        lean_test_name = "three_" + "_".join(lean_test_name.split("_")[1:])
+      if lean_test_name.split("_")[0] == "2":
+        lean_test_name = "two_" + "_".join(lean_test_name.split("_")[1:])
       test_base = test_name.split("-")[0]
 
       if first_iteration:
@@ -63,7 +68,6 @@ def analyze(file_path):
       total_value = int(parts[5].strip(','))  # Extract the "total" value
 
       if weak_value > 0:
-        print(test_name)
         all_tests[lean_test_name] = True
         if test_name in unexpected_non_weak:
          test_summaries[test_base]["actual_weak"] += 1

@@ -24,11 +24,11 @@ def main():
       test_base = "wrw+2w"
     if test_base == "paper":
       test_base = "paper-example"
-    if test_base = "two":
+    if test_base == "two":
       test_base = "2+2w"
-    if test_base = "three":
+    if test_base == "three":
       test_base = "3.2w"
-    if test_base = "z6":
+    if test_base == "z6":
       test_base = "z6-3"
 
     if test_base not in test_summaries:
