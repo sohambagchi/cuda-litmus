@@ -1,0 +1,4 @@
+counterexample 3-loc.txt
+TB_012_3
+SCOPE_SYSTEM SCOPE_DEVICE
+DEFAULT
