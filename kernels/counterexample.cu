@@ -20,14 +20,6 @@ __global__ void litmus_test(
   uint shuffled_workgroup = shuffled_workgroups[blockIdx.x];
   if (shuffled_workgroup < kernel_params->testing_workgroups) {
 
-#ifdef DISALLOWED
-    cuda::memory_order load_order = cuda::memory_order_acquire;
-    cuda::memory_order store_order = cuda::memory_order_release;
-#else
-    cuda::memory_order load_order = cuda::memory_order_relaxed;
-    cuda::memory_order store_order = cuda::memory_order_relaxed;
-#endif
-
     DEFINE_IDS();
 
     uint permute_id_0 = permute_id(id_0, kernel_params->permute_location, total_ids);
@@ -78,14 +70,11 @@ __global__ void check_results(
   TestResults* test_results,
   KernelParams* kernel_params,
   bool* weak) {
-  uint total_ids = blockDim.x * kernel_params->testing_workgroups;
   uint id_0 = blockIdx.x * blockDim.x + threadIdx.x;
   uint x = test_locations[id_0 * kernel_params->mem_stride * 3];
   uint r0 = read_results[id_0].r0;
   uint r1 = read_results[id_0].r1;
   uint r2 = read_results[id_0].r2;
-  uint x_loc = id_0 * kernel_params->mem_stride * 3;
-  uint x = test_locations[x_loc];
 
   if (x == 0) {
     test_results->na.fetch_add(1); // thread skipped
