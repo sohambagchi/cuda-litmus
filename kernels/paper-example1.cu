@@ -23,9 +23,24 @@ __global__ void litmus_test(
 #ifdef DISALLOWED
     cuda::memory_order load_order = cuda::memory_order_acquire;
     cuda::memory_order store_order = cuda::memory_order_release;
+    #define FENCE_0() cuda::atomic_thread_fence(cuda::memory_order_seq_cst, FENCE_SCOPE);
+    #define FENCE_1() cuda::atomic_thread_fence(cuda::memory_order_seq_cst, FENCE_SCOPE);
+    #define FENCE_2() cuda::atomic_thread_fence(cuda::memory_order_seq_cst, FENCE_SCOPE);
+    #define FENCE_3() cuda::atomic_thread_fence(cuda::memory_order_seq_cst, FENCE_SCOPE);
+#elif defined(DISALLOWED_NO_FENCE_T3)
+    cuda::memory_order load_order = cuda::memory_order_acquire;
+    cuda::memory_order store_order = cuda::memory_order_release;
+    #define FENCE_0() cuda::atomic_thread_fence(cuda::memory_order_seq_cst, FENCE_SCOPE);
+    #define FENCE_1() cuda::atomic_thread_fence(cuda::memory_order_seq_cst, FENCE_SCOPE);
+    #define FENCE_2() cuda::atomic_thread_fence(cuda::memory_order_seq_cst, FENCE_SCOPE);
+    #define FENCE_3()
 #else
     cuda::memory_order load_order = cuda::memory_order_relaxed;
     cuda::memory_order store_order = cuda::memory_order_relaxed;
+    #define FENCE_0()
+    #define FENCE_1()
+    #define FENCE_2()
+    #define FENCE_3()
 #endif
 
     DEFINE_IDS();
@@ -51,16 +66,20 @@ __global__ void litmus_test(
 
     if (id_0 != id_1 && id_0 != id_2 && id_0 != id_3 && id_1 != id_2 && id_1 != id_3 && id_2 != id_3) {
 
+      FENCE_0();
       test_locations[x_0].store(1, store_order); // write x
       test_locations[y_0].store(1, store_order); // write y
 
       uint r0 = test_locations[y_1].load(load_order); // read y
+      FENCE_1();
       test_locations[z_1].store(1, store_order); // write z
 
+      FENCE_2();
       test_locations[z_2].store(2, store_order); // write z
       test_locations[a_2].store(1, store_order); // write a
 
       uint r1 = test_locations[a_3].load(load_order); // read a
+      FENCE_3();
       uint r2 = test_locations[x_3].load(load_order); // read x
 
       cuda::atomic_thread_fence(cuda::memory_order_seq_cst);
