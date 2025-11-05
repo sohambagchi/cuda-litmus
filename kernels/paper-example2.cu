@@ -26,21 +26,12 @@ __global__ void litmus_test(
     #define FENCE_0() cuda::atomic_thread_fence(cuda::memory_order_seq_cst, FENCE_SCOPE);
     #define FENCE_1() cuda::atomic_thread_fence(cuda::memory_order_seq_cst, FENCE_SCOPE);
     #define FENCE_2() cuda::atomic_thread_fence(cuda::memory_order_seq_cst, FENCE_SCOPE);
-    #define FENCE_3() cuda::atomic_thread_fence(cuda::memory_order_seq_cst, FENCE_SCOPE);
-#elif defined(DISALLOWED_NO_FENCE_T3)
-    cuda::memory_order load_order = cuda::memory_order_acquire;
-    cuda::memory_order store_order = cuda::memory_order_release;
-    #define FENCE_0() cuda::atomic_thread_fence(cuda::memory_order_seq_cst, FENCE_SCOPE);
-    #define FENCE_1() cuda::atomic_thread_fence(cuda::memory_order_seq_cst, FENCE_SCOPE);
-    #define FENCE_2() cuda::atomic_thread_fence(cuda::memory_order_seq_cst, FENCE_SCOPE);
-    #define FENCE_3()
 #else
     cuda::memory_order load_order = cuda::memory_order_relaxed;
     cuda::memory_order store_order = cuda::memory_order_relaxed;
     #define FENCE_0()
     #define FENCE_1()
     #define FENCE_2()
-    #define FENCE_3()
 #endif
 
     DEFINE_IDS();
@@ -79,7 +70,6 @@ __global__ void litmus_test(
       test_locations[a_2].store(1, store_order); // write a
 
       uint r2 = test_locations[a_3].load(load_order); // read a
-      FENCE_3();
       uint r3 = test_locations[x_3].load(load_order); // read x
 
       cuda::atomic_thread_fence(cuda::memory_order_seq_cst);
