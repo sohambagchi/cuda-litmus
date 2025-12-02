@@ -351,6 +351,10 @@ typedef struct {
   uint r1;
   uint r2;
   uint r3;
+  uint r4;
+  uint r5;
+  uint r6;
+  uint r7;
 } ReadResults;
 
 typedef struct {
