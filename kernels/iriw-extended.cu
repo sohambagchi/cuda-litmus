@@ -31,7 +31,7 @@ __global__ void litmus_test(
 
     uint x_0 = (wg_offset + id_0) * kernel_params->mem_stride * 4;
     uint permute_id_0 = permute_id(id_0, kernel_params->permute_location, total_ids);
-    uint y_0 = (wg_offset + permute_id_0) * kernel_params->mem_stride * 4 + kernel_params->mem_offset;
+    //uint y_0 = (wg_offset + permute_id_0) * kernel_params->mem_stride * 4 + kernel_params->mem_offset;
     uint permute_2_id_0 = permute_id(permute_id_0, kernel_params->permute_location, total_ids);
     uint a_0 = (wg_offset + permute_2_id_0) * kernel_params->mem_stride * 4 + 2 * kernel_params->mem_offset;
     uint b_0 = (wg_offset + permute_id(permute_2_id_0, kernel_params->permute_location, total_ids)) * kernel_params->mem_stride * 4 + 3 * kernel_params->mem_offset;
@@ -67,23 +67,23 @@ __global__ void litmus_test(
     if (id_0 != id_1 && id_0 != id_2 && id_0 != id_3 && id_1 != id_2 && id_1 != id_3 && id_2 != id_3) {
 
       test_locations[x_0].store(1, cuda::memory_order_relaxed); // write x
-      cuda::atomic_thread_fence(cuda::memory_order_seq_cst);
+//      cuda::atomic_thread_fence(cuda::memory_order_seq_cst);
       uint r4 = test_locations[a_0].load(load_order); // read a
       uint r5 = test_locations[b_0].load(cuda::memory_order_relaxed); // read b
 
       uint r0 = test_locations[x_1].load(load_order); // read x
       uint r1 = test_locations[y_1].load(cuda::memory_order_relaxed); // read y
-      cuda::atomic_thread_fence(cuda::memory_order_seq_cst);
+ //     cuda::atomic_thread_fence(cuda::memory_order_seq_cst);
       test_locations[b_1].store(1, cuda::memory_order_relaxed); // write b
 
       test_locations[y_2].store(1, cuda::memory_order_relaxed); // write y
-      cuda::atomic_thread_fence(cuda::memory_order_seq_cst);
+  //    cuda::atomic_thread_fence(cuda::memory_order_seq_cst);
       uint r6 = test_locations[b_2].load(load_order); // read b
       uint r7 = test_locations[a_2].load(cuda::memory_order_relaxed); // read a
 
       uint r2 = test_locations[y_3].load(load_order); // read y
       uint r3 = test_locations[x_3].load(cuda::memory_order_relaxed); // read x
-      cuda::atomic_thread_fence(cuda::memory_order_seq_cst);
+   //   cuda::atomic_thread_fence(cuda::memory_order_seq_cst);
       test_locations[a_3].store(1, cuda::memory_order_relaxed); // write a
 
       cuda::atomic_thread_fence(cuda::memory_order_seq_cst);
@@ -119,18 +119,23 @@ __global__ void check_results(
 
   if (x == 0) {
     test_results->na.fetch_add(1); // thread skipped
+    return;
   }
-  else if (r0 == 1 && r1 == 0 && r2 == 1 && r3 == 0 && r4 == 1 && r5 == 0 && r6 == 1 && r7 == 0) { // both tests see weak behavior
+  bool checked = false;
+  if (r0 == 1 && r1 == 0 && r2 == 1 && r3 == 0) { // observer threads see x/y in different orders
+    test_results->res14.fetch_add(1);
+    checked = true;
+  }
+  if (r4 == 1 && r5 == 0 && r6 == 1 && r7 == 0) { // observer threads see a/b in different orders
+    test_results->res15.fetch_add(1);
+    checked = true;
+  }
+  if (r0 == 1 && r1 == 0 && r2 == 1 && r3 == 0 && r4 == 1 && r5 == 0 && r6 == 1 && r7 == 0) { // both tests see weak behavior
     test_results->weak.fetch_add(1);
     weak[id_0] = true;
+    checked = true;
   }
-  else if (r0 == 1 && r1 == 0 && r2 == 1 && r3 == 0) { // observer threads see x/y in different orders
-    test_results->res14.fetch_add(1);
-  }
-  else if (r4 == 1 && r5 == 0 && r6 == 1 && r7 == 0) { // observer threads see a/b in different orders
-    test_results->res15.fetch_add(1);
-  }
-  else {
+  if (!checked) {
     test_results->other.fetch_add(1);
   }
 }
@@ -143,6 +148,5 @@ int host_check_results(TestResults* results, bool print) {
     std::cout << "thread skipped: " << results->na << "\n";
     std::cout << "other: " << results->other << "\n";
   }
-  return results->weak;
+  return results->weak + results->res14 + results->res15;
 }
-

@@ -1,0 +1,2 @@
+iriw-extended 4-loc.txt TB_0_1_2_3 SCOPE_DEVICE NO_FENCE ACQUIRE
+iriw-extended 4-loc.txt TB_0_1_2_3 SCOPE_DEVICE NO_FENCE RELAXED
