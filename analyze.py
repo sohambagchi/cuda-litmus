@@ -8,13 +8,15 @@ def analyze(file_path):
   test_summaries = {}
 
   unexpected_non_weak = set()
+  relaxed_tests = set()
+  relaxed_seen = set()
   unexpected_weak = set()
   same_tb_weak = set() # pull these out separately because we haven't seen it yet
   a_block_f_sys_dev_weak = set()
 
   all_tests = {}
 
-  test_summaries["all"] = {"tests": 0, "expected_weak": 0, "actual_weak": 0, "expected_non_weak": 0, "actual_non_weak": 0,  "weak_behaviors": 0, "total_behaviors": 0, "avg_relaxed_rate": []}
+  test_summaries["all"] = {"tests": 0, "expected_weak": 0, "actual_weak": 0, "expected_non_weak": 0, "actual_non_weak": 0,  "weak_behaviors": 0, "total_behaviors": 0, "avg_relaxed_rate": [], "relaxed_tests": 0, "relaxed_seen": 0}
 
   # Reading the file
   with open(file_path, 'r') as file:
@@ -44,9 +46,13 @@ def analyze(file_path):
         all_tests[lean_test_name] = False
 
         if test_base not in test_summaries:
-          test_summaries[test_base] = {"tests": 0, "expected_weak": 0, "actual_weak": 0, "expected_non_weak": 0, "actual_non_weak": 0,  "weak_behaviors": 0, "total_behaviors": 0, "avg_relaxed_rate": []}
+            test_summaries[test_base] = {"tests": 0, "expected_weak": 0, "actual_weak": 0, "expected_non_weak": 0, "actual_non_weak": 0,  "weak_behaviors": 0, "total_behaviors": 0, "avg_relaxed_rate": [], "relaxed_tests": 0, "relaxed_seen": 0}
 
         if "RELAXED" in test_name:
+          relaxed_tests.add(test_name)
+          test_summaries[test_base]["relaxed_tests"] += 1
+          test_summaries["all"]["relaxed_tests"] += 1
+
           test_summaries[test_base]["avg_relaxed_rate"].append(test_rate)
           test_summaries["all"]["avg_relaxed_rate"].append(test_rate)
 
@@ -68,6 +74,11 @@ def analyze(file_path):
       total_value = int(parts[5].strip(','))  # Extract the "total" value
 
       if weak_value > 0:
+        if "RELAXED" in test_name and test_name not in relaxed_seen:
+            test_summaries[test_base]["relaxed_seen"] += 1
+            test_summaries["all"]["relaxed_seen"] += 1
+            relaxed_seen.add(test_name)
+
         all_tests[lean_test_name] = True
         if test_name in unexpected_non_weak:
          test_summaries[test_base]["actual_weak"] += 1
@@ -113,6 +124,7 @@ def analyze(file_path):
   print(f"Unexpected weak tests: {unexpected_weak}")
   #print(f"Weak same threadblock tests: {same_tb_weak}")
 #  print(f"Weak atomic sys/device, fence block: {a_block_f_sys_dev_weak}")
+  #print(relaxed_tests - relaxed_seen)
   return all_tests
 
 def main():
