@@ -27,6 +27,31 @@ typedef cuda::atomic<uint> d_atomic_uint; // default, which is system too
 #define FENCE_SCOPE cuda::thread_scope_system
 #endif
 
+#ifdef TB_0_1
+#define DEFINE_IDS()                                                                                           \
+  uint total_ids = blockDim.x * kernel_params->testing_workgroups; \
+  uint id_0 = shuffled_workgroup * blockDim.x + threadIdx.x; \
+  uint new_workgroup = stripe_workgroup(shuffled_workgroup, threadIdx.x, kernel_params->testing_workgroups); \
+  uint id_1 = new_workgroup * blockDim.x + threadIdx.x; \
+  uint wg_offset = 0;
+
+#define RESULT_IDS() \
+  uint total_ids = blockDim.x * kernel_params->testing_workgroups; \
+  uint wg_offset = 0;
+#elif defined(TB_01)
+#define DEFINE_IDS()                                                                                           \
+  uint total_ids = blockDim.x; \
+  uint id_0 = threadIdx.x; \
+  uint id_1 = permute_id(threadIdx.x, kernel_params->permute_thread, blockDim.x); \
+  uint wg_offset = shuffled_workgroup * blockDim.x;
+
+#define RESULT_IDS() \
+  uint total_ids = blockDim.x; \
+  uint wg_offset = blockIdx.x * blockDim.x;
+#else
+// no inclusion
+#endif
+
 #ifdef TB_0_1_2
 #define DEFINE_IDS()                                                                                           \
   uint total_ids = blockDim.x * kernel_params->testing_workgroups; \
@@ -276,6 +301,7 @@ typedef cuda::atomic<uint> d_atomic_uint; // default, which is system too
 // no inclusion
 #endif
 
+
 #define THREE_THREAD_TWO_MEM_LOCATIONS() \
   uint x_0 = (wg_offset + id_0) * kernel_params->mem_stride * 2; \
   uint y_0 = (wg_offset + permute_id(id_0, kernel_params->permute_location, total_ids)) * kernel_params->mem_stride * 2 + kernel_params->mem_offset; \
@@ -327,6 +353,10 @@ typedef struct {
   uint r1;
   uint r2;
   uint r3;
+  uint r4;
+  uint r5;
+  uint r6;
+  uint r7;
 } ReadResults;
 
 typedef struct {

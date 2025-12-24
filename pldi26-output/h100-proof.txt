@@ -1,0 +1,176 @@
+Compiling iriw-TB_01_23-SCOPE_DEVICE-NO_FENCE-ACQUIRE runner
+Compiling iriw-TB_0_1_23-SCOPE_DEVICE-NO_FENCE-ACQUIRE runner
+Compiling iriw-TB_0_1_23-SCOPE_DEVICE-FENCE_SCOPE_DEVICE-THREAD_1_FENCE runner
+Compiling wrc-TB_0_1_2-SCOPE_DEVICE-NO_FENCE-ACQUIRE runner
+Compiling wrc-TB_01_2-SCOPE_DEVICE-NO_FENCE-ACQUIRE runner
+Compiling wrc-TB_0_12-SCOPE_DEVICE-FENCE_SCOPE_BLOCK-BOTH_FENCE runner
+Compiling rwc-TB_0_1_2-SCOPE_DEVICE-FENCE_SCOPE_DEVICE-THREAD_2_FENCE runner
+Compiling rwc-TB_01_2-SCOPE_DEVICE-FENCE_SCOPE_DEVICE-THREAD_2_FENCE runner
+Iteration: 0
+  Test iriw-TB_01_23-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 20488000, rate: 0 per second
+  Test iriw-TB_0_1_23-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 20488000, rate: 0 per second
+  Test iriw-TB_0_1_23-SCOPE_DEVICE-FENCE_SCOPE_DEVICE-THREAD_1_FENCE weak: 0, total: 20488000, rate: 0 per second
+  Test wrc-TB_0_1_2-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 20882000, rate: 0 per second
+  Test wrc-TB_01_2-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 20488000, rate: 0 per second
+  Test wrc-TB_0_12-SCOPE_DEVICE-FENCE_SCOPE_BLOCK-BOTH_FENCE weak: 0, total: 20488000, rate: 0 per second
+  Test rwc-TB_0_1_2-SCOPE_DEVICE-FENCE_SCOPE_DEVICE-THREAD_2_FENCE weak: 0, total: 20882000, rate: 0 per second
+  Test rwc-TB_01_2-SCOPE_DEVICE-FENCE_SCOPE_DEVICE-THREAD_2_FENCE weak: 0, total: 20488000, rate: 0 per second
+Iteration: 1
+  Test iriw-TB_01_23-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 42594000, rate: 0 per second
+  Test iriw-TB_0_1_23-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 42594000, rate: 0 per second
+  Test iriw-TB_0_1_23-SCOPE_DEVICE-FENCE_SCOPE_DEVICE-THREAD_1_FENCE weak: 0, total: 42594000, rate: 0 per second
+  Test wrc-TB_0_1_2-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 43052000, rate: 0 per second
+  Test wrc-TB_01_2-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 42594000, rate: 0 per second
+  Test wrc-TB_0_12-SCOPE_DEVICE-FENCE_SCOPE_BLOCK-BOTH_FENCE weak: 0, total: 42594000, rate: 0 per second
+  Test rwc-TB_0_1_2-SCOPE_DEVICE-FENCE_SCOPE_DEVICE-THREAD_2_FENCE weak: 0, total: 43052000, rate: 0 per second
+  Test rwc-TB_01_2-SCOPE_DEVICE-FENCE_SCOPE_DEVICE-THREAD_2_FENCE weak: 0, total: 42594000, rate: 0 per second
+Iteration: 2
+  Test iriw-TB_01_23-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 23220000, rate: 0 per second
+  Test iriw-TB_0_1_23-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 23220000, rate: 0 per second
+  Test iriw-TB_0_1_23-SCOPE_DEVICE-FENCE_SCOPE_DEVICE-THREAD_1_FENCE weak: 0, total: 23220000, rate: 0 per second
+  Test wrc-TB_0_1_2-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 23736000, rate: 0 per second
+  Test wrc-TB_01_2-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 23220000, rate: 0 per second
+  Test wrc-TB_0_12-SCOPE_DEVICE-FENCE_SCOPE_BLOCK-BOTH_FENCE weak: 0, total: 23220000, rate: 0 per second
+  Test rwc-TB_0_1_2-SCOPE_DEVICE-FENCE_SCOPE_DEVICE-THREAD_2_FENCE weak: 0, total: 23736000, rate: 0 per second
+  Test rwc-TB_01_2-SCOPE_DEVICE-FENCE_SCOPE_DEVICE-THREAD_2_FENCE weak: 0, total: 23220000, rate: 0 per second
+Iteration: 3
+  Test iriw-TB_01_23-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 40810000, rate: 0 per second
+  Test iriw-TB_0_1_23-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 40810000, rate: 0 per second
+  Test iriw-TB_0_1_23-SCOPE_DEVICE-FENCE_SCOPE_DEVICE-THREAD_1_FENCE weak: 0, total: 40810000, rate: 0 per second
+  Test wrc-TB_0_1_2-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 41976000, rate: 0 per second
+  Test wrc-TB_01_2-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 40810000, rate: 0 per second
+  Test wrc-TB_0_12-SCOPE_DEVICE-FENCE_SCOPE_BLOCK-BOTH_FENCE weak: 0, total: 40810000, rate: 0 per second
+  Test rwc-TB_0_1_2-SCOPE_DEVICE-FENCE_SCOPE_DEVICE-THREAD_2_FENCE weak: 0, total: 41976000, rate: 0 per second
+  Test rwc-TB_01_2-SCOPE_DEVICE-FENCE_SCOPE_DEVICE-THREAD_2_FENCE weak: 0, total: 40810000, rate: 0 per second
+Iteration: 4
+  Test iriw-TB_01_23-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 33086000, rate: 0 per second
+  Test iriw-TB_0_1_23-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 33086000, rate: 0 per second
+  Test iriw-TB_0_1_23-SCOPE_DEVICE-FENCE_SCOPE_DEVICE-THREAD_1_FENCE weak: 0, total: 33086000, rate: 0 per second
+  Test wrc-TB_0_1_2-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 33552000, rate: 0 per second
+  Test wrc-TB_01_2-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 33086000, rate: 0 per second
+  Test wrc-TB_0_12-SCOPE_DEVICE-FENCE_SCOPE_BLOCK-BOTH_FENCE weak: 0, total: 33086000, rate: 0 per second
+  Test rwc-TB_0_1_2-SCOPE_DEVICE-FENCE_SCOPE_DEVICE-THREAD_2_FENCE weak: 0, total: 33552000, rate: 0 per second
+  Test rwc-TB_01_2-SCOPE_DEVICE-FENCE_SCOPE_DEVICE-THREAD_2_FENCE weak: 0, total: 33086000, rate: 0 per second
+Iteration: 5
+  Test iriw-TB_01_23-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 3990000, rate: 0 per second
+  Test iriw-TB_0_1_23-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 3990000, rate: 0 per second
+  Test iriw-TB_0_1_23-SCOPE_DEVICE-FENCE_SCOPE_DEVICE-THREAD_1_FENCE weak: 0, total: 3990000, rate: 0 per second
+  Test wrc-TB_0_1_2-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 4788000, rate: 0 per second
+  Test wrc-TB_01_2-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 3990000, rate: 0 per second
+  Test wrc-TB_0_12-SCOPE_DEVICE-FENCE_SCOPE_BLOCK-BOTH_FENCE weak: 0, total: 3990000, rate: 0 per second
+  Test rwc-TB_0_1_2-SCOPE_DEVICE-FENCE_SCOPE_DEVICE-THREAD_2_FENCE weak: 0, total: 4788000, rate: 0 per second
+  Test rwc-TB_01_2-SCOPE_DEVICE-FENCE_SCOPE_DEVICE-THREAD_2_FENCE weak: 0, total: 3990000, rate: 0 per second
+Iteration: 6
+  Test iriw-TB_01_23-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 23352000, rate: 0 per second
+  Test iriw-TB_0_1_23-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 23352000, rate: 0 per second
+  Test iriw-TB_0_1_23-SCOPE_DEVICE-FENCE_SCOPE_DEVICE-THREAD_1_FENCE weak: 0, total: 23352000, rate: 0 per second
+  Test wrc-TB_0_1_2-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 23908000, rate: 0 per second
+  Test wrc-TB_01_2-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 23352000, rate: 0 per second
+  Test wrc-TB_0_12-SCOPE_DEVICE-FENCE_SCOPE_BLOCK-BOTH_FENCE weak: 0, total: 23352000, rate: 0 per second
+  Test rwc-TB_0_1_2-SCOPE_DEVICE-FENCE_SCOPE_DEVICE-THREAD_2_FENCE weak: 0, total: 23908000, rate: 0 per second
+  Test rwc-TB_01_2-SCOPE_DEVICE-FENCE_SCOPE_DEVICE-THREAD_2_FENCE weak: 0, total: 23352000, rate: 0 per second
+Iteration: 7
+  Test iriw-TB_01_23-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 83104000, rate: 0 per second
+  Test iriw-TB_0_1_23-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 83104000, rate: 0 per second
+  Test iriw-TB_0_1_23-SCOPE_DEVICE-FENCE_SCOPE_DEVICE-THREAD_1_FENCE weak: 0, total: 83104000, rate: 0 per second
+  Test wrc-TB_0_1_2-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 84672000, rate: 0 per second
+  Test wrc-TB_01_2-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 83104000, rate: 0 per second
+  Test wrc-TB_0_12-SCOPE_DEVICE-FENCE_SCOPE_BLOCK-BOTH_FENCE weak: 0, total: 83104000, rate: 0 per second
+  Test rwc-TB_0_1_2-SCOPE_DEVICE-FENCE_SCOPE_DEVICE-THREAD_2_FENCE weak: 0, total: 84672000, rate: 0 per second
+  Test rwc-TB_01_2-SCOPE_DEVICE-FENCE_SCOPE_DEVICE-THREAD_2_FENCE weak: 0, total: 83104000, rate: 0 per second
+Iteration: 8
+  Test iriw-TB_01_23-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 58072000, rate: 0 per second
+  Test iriw-TB_0_1_23-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 58072000, rate: 0 per second
+  Test iriw-TB_0_1_23-SCOPE_DEVICE-FENCE_SCOPE_DEVICE-THREAD_1_FENCE weak: 2, total: 58072000, rate: 4 per second
+  Test wrc-TB_0_1_2-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 59024000, rate: 0 per second
+  Test wrc-TB_01_2-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 58072000, rate: 0 per second
+  Test wrc-TB_0_12-SCOPE_DEVICE-FENCE_SCOPE_BLOCK-BOTH_FENCE weak: 0, total: 58072000, rate: 0 per second
+  Test rwc-TB_0_1_2-SCOPE_DEVICE-FENCE_SCOPE_DEVICE-THREAD_2_FENCE weak: 0, total: 59024000, rate: 0 per second
+  Test rwc-TB_01_2-SCOPE_DEVICE-FENCE_SCOPE_DEVICE-THREAD_2_FENCE weak: 0, total: 58072000, rate: 0 per second
+Iteration: 9
+  Test iriw-TB_01_23-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 104728000, rate: 0 per second
+  Test iriw-TB_0_1_23-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 104728000, rate: 0 per second
+  Test iriw-TB_0_1_23-SCOPE_DEVICE-FENCE_SCOPE_DEVICE-THREAD_1_FENCE weak: 0, total: 104728000, rate: 0 per second
+  Test wrc-TB_0_1_2-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 130910000, rate: 0 per second
+  Test wrc-TB_01_2-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 104728000, rate: 0 per second
+  Test wrc-TB_0_12-SCOPE_DEVICE-FENCE_SCOPE_BLOCK-BOTH_FENCE weak: 0, total: 104728000, rate: 0 per second
+  Test rwc-TB_0_1_2-SCOPE_DEVICE-FENCE_SCOPE_DEVICE-THREAD_2_FENCE weak: 0, total: 130910000, rate: 0 per second
+  Test rwc-TB_01_2-SCOPE_DEVICE-FENCE_SCOPE_DEVICE-THREAD_2_FENCE weak: 0, total: 104728000, rate: 0 per second
+Iteration: 10
+  Test iriw-TB_01_23-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 70092000, rate: 0 per second
+  Test iriw-TB_0_1_23-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 70092000, rate: 0 per second
+  Test iriw-TB_0_1_23-SCOPE_DEVICE-FENCE_SCOPE_DEVICE-THREAD_1_FENCE weak: 0, total: 70092000, rate: 0 per second
+  Test wrc-TB_0_1_2-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 70800000, rate: 0 per second
+  Test wrc-TB_01_2-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 70092000, rate: 0 per second
+  Test wrc-TB_0_12-SCOPE_DEVICE-FENCE_SCOPE_BLOCK-BOTH_FENCE weak: 0, total: 70092000, rate: 0 per second
+  Test rwc-TB_0_1_2-SCOPE_DEVICE-FENCE_SCOPE_DEVICE-THREAD_2_FENCE weak: 0, total: 70800000, rate: 0 per second
+  Test rwc-TB_01_2-SCOPE_DEVICE-FENCE_SCOPE_DEVICE-THREAD_2_FENCE weak: 0, total: 70092000, rate: 0 per second
+Iteration: 11
+  Test iriw-TB_01_23-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 208284000, rate: 0 per second
+  Test iriw-TB_0_1_23-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 208284000, rate: 0 per second
+  Test iriw-TB_0_1_23-SCOPE_DEVICE-FENCE_SCOPE_DEVICE-THREAD_1_FENCE weak: 0, total: 208284000, rate: 0 per second
+  Test wrc-TB_0_1_2-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 210326000, rate: 0 per second
+  Test wrc-TB_01_2-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 208284000, rate: 0 per second
+  Test wrc-TB_0_12-SCOPE_DEVICE-FENCE_SCOPE_BLOCK-BOTH_FENCE weak: 0, total: 208284000, rate: 0 per second
+  Test rwc-TB_0_1_2-SCOPE_DEVICE-FENCE_SCOPE_DEVICE-THREAD_2_FENCE weak: 0, total: 210326000, rate: 0 per second
+  Test rwc-TB_01_2-SCOPE_DEVICE-FENCE_SCOPE_DEVICE-THREAD_2_FENCE weak: 0, total: 208284000, rate: 0 per second
+Iteration: 12
+  Test iriw-TB_01_23-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 24492000, rate: 0 per second
+  Test iriw-TB_0_1_23-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 24492000, rate: 0 per second
+  Test iriw-TB_0_1_23-SCOPE_DEVICE-FENCE_SCOPE_DEVICE-THREAD_1_FENCE weak: 0, total: 24492000, rate: 0 per second
+  Test wrc-TB_0_1_2-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 25434000, rate: 0 per second
+  Test wrc-TB_01_2-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 24492000, rate: 0 per second
+  Test wrc-TB_0_12-SCOPE_DEVICE-FENCE_SCOPE_BLOCK-BOTH_FENCE weak: 0, total: 24492000, rate: 0 per second
+  Test rwc-TB_0_1_2-SCOPE_DEVICE-FENCE_SCOPE_DEVICE-THREAD_2_FENCE weak: 0, total: 25434000, rate: 0 per second
+  Test rwc-TB_01_2-SCOPE_DEVICE-FENCE_SCOPE_DEVICE-THREAD_2_FENCE weak: 0, total: 24492000, rate: 0 per second
+Iteration: 13
+  Test iriw-TB_01_23-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 11712000, rate: 0 per second
+  Test iriw-TB_0_1_23-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 11712000, rate: 0 per second
+  Test iriw-TB_0_1_23-SCOPE_DEVICE-FENCE_SCOPE_DEVICE-THREAD_1_FENCE weak: 0, total: 11712000, rate: 0 per second
+  Test wrc-TB_0_1_2-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 11834000, rate: 0 per second
+  Test wrc-TB_01_2-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 11712000, rate: 0 per second
+  Test wrc-TB_0_12-SCOPE_DEVICE-FENCE_SCOPE_BLOCK-BOTH_FENCE weak: 0, total: 11712000, rate: 0 per second
+  Test rwc-TB_0_1_2-SCOPE_DEVICE-FENCE_SCOPE_DEVICE-THREAD_2_FENCE weak: 0, total: 11834000, rate: 0 per second
+  Test rwc-TB_01_2-SCOPE_DEVICE-FENCE_SCOPE_DEVICE-THREAD_2_FENCE weak: 0, total: 11712000, rate: 0 per second
+Iteration: 14
+  Test iriw-TB_01_23-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 124300000, rate: 0 per second
+  Test iriw-TB_0_1_23-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 124300000, rate: 0 per second
+  Test iriw-TB_0_1_23-SCOPE_DEVICE-FENCE_SCOPE_DEVICE-THREAD_1_FENCE weak: 0, total: 124300000, rate: 0 per second
+  Test wrc-TB_0_1_2-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 125430000, rate: 0 per second
+  Test wrc-TB_01_2-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 124300000, rate: 0 per second
+  Test wrc-TB_0_12-SCOPE_DEVICE-FENCE_SCOPE_BLOCK-BOTH_FENCE weak: 0, total: 124300000, rate: 0 per second
+  Test rwc-TB_0_1_2-SCOPE_DEVICE-FENCE_SCOPE_DEVICE-THREAD_2_FENCE weak: 0, total: 125430000, rate: 0 per second
+  Test rwc-TB_01_2-SCOPE_DEVICE-FENCE_SCOPE_DEVICE-THREAD_2_FENCE weak: 0, total: 124300000, rate: 0 per second
+Iteration: 15
+  Test iriw-TB_01_23-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 95700000, rate: 0 per second
+  Test iriw-TB_0_1_23-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 95700000, rate: 0 per second
+  Test iriw-TB_0_1_23-SCOPE_DEVICE-FENCE_SCOPE_DEVICE-THREAD_1_FENCE weak: 0, total: 95700000, rate: 0 per second
+  Test wrc-TB_0_1_2-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 97440000, rate: 0 per second
+  Test wrc-TB_01_2-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 95700000, rate: 0 per second
+  Test wrc-TB_0_12-SCOPE_DEVICE-FENCE_SCOPE_BLOCK-BOTH_FENCE weak: 0, total: 95700000, rate: 0 per second
+  Test rwc-TB_0_1_2-SCOPE_DEVICE-FENCE_SCOPE_DEVICE-THREAD_2_FENCE weak: 0, total: 97440000, rate: 0 per second
+  Test rwc-TB_01_2-SCOPE_DEVICE-FENCE_SCOPE_DEVICE-THREAD_2_FENCE weak: 0, total: 95700000, rate: 0 per second
+Iteration: 16
+  Test iriw-TB_01_23-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 65142000, rate: 0 per second
+  Test iriw-TB_0_1_23-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 65142000, rate: 0 per second
+  Test iriw-TB_0_1_23-SCOPE_DEVICE-FENCE_SCOPE_DEVICE-THREAD_1_FENCE weak: 0, total: 65142000, rate: 0 per second
+  Test wrc-TB_0_1_2-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 86856000, rate: 0 per second
+  Test wrc-TB_01_2-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 65142000, rate: 0 per second
+  Test wrc-TB_0_12-SCOPE_DEVICE-FENCE_SCOPE_BLOCK-BOTH_FENCE weak: 0, total: 65142000, rate: 0 per second
+  Test rwc-TB_0_1_2-SCOPE_DEVICE-FENCE_SCOPE_DEVICE-THREAD_2_FENCE weak: 0, total: 86856000, rate: 0 per second
+  Test rwc-TB_01_2-SCOPE_DEVICE-FENCE_SCOPE_DEVICE-THREAD_2_FENCE weak: 0, total: 65142000, rate: 0 per second
+Iteration: 17
+  Test iriw-TB_01_23-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 936000, rate: 0 per second
+  Test iriw-TB_0_1_23-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 936000, rate: 0 per second
+  Test iriw-TB_0_1_23-SCOPE_DEVICE-FENCE_SCOPE_DEVICE-THREAD_1_FENCE weak: 0, total: 936000, rate: 0 per second
+  Test wrc-TB_0_1_2-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 1014000, rate: 0 per second
+  Test wrc-TB_01_2-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 936000, rate: 0 per second
+  Test wrc-TB_0_12-SCOPE_DEVICE-FENCE_SCOPE_BLOCK-BOTH_FENCE weak: 0, total: 936000, rate: 0 per second
+  Test rwc-TB_0_1_2-SCOPE_DEVICE-FENCE_SCOPE_DEVICE-THREAD_2_FENCE weak: 0, total: 1014000, rate: 0 per second
+  Test rwc-TB_01_2-SCOPE_DEVICE-FENCE_SCOPE_DEVICE-THREAD_2_FENCE weak: 0, total: 936000, rate: 0 per second
+Iteration: 18
+  Test iriw-TB_01_23-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 79294000, rate: 0 per second
+  Test iriw-TB_0_1_23-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 79294000, rate: 0 per second
+  Test iriw-TB_0_1_23-SCOPE_DEVICE-FENCE_SCOPE_DEVICE-THREAD_1_FENCE weak: 0, total: 79294000, rate: 0 per second
+  Test wrc-TB_0_1_2-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 81228000, rate: 0 per second
+  Test wrc-TB_01_2-SCOPE_DEVICE-NO_FENCE-ACQUIRE weak: 0, total: 79294000, rate: 0 per second
