@@ -5,17 +5,52 @@
 #include <cuda_runtime.h>
 #include <cuda/atomic>
 
-#ifdef SCOPE_DEVICE
-typedef cuda::atomic<uint, cuda::thread_scope_device> d_atomic_uint;
-#elif defined(SCOPE_BLOCK)
-typedef cuda::atomic<uint, cuda::thread_scope_block> d_atomic_uint;
-#elif defined(SCOPE_SYSTEM)
-typedef cuda::atomic<uint, cuda::thread_scope_system> d_atomic_uint;
-#elif defined(SCOPE_CTA)
-typedef cuda::atomic<uint, cuda::thread_scope_thread> d_atomic_uint;
+#ifdef SCOPE_DEVICE_X
+typedef cuda::atomic<uint, cuda::thread_scope_device> d_atomic_uint_x;
+#elif defined(SCOPE_BLOCK_X)
+typedef cuda::atomic<uint, cuda::thread_scope_block> d_atomic_uint_x;
+#elif defined(SCOPE_SYSTEM_X)
+typedef cuda::atomic<uint, cuda::thread_scope_system> d_atomic_uint_x;
+#elif defined(SCOPE_CTA_X)
+typedef cuda::atomic<uint, cuda::thread_scope_thread> d_atomic_uint_x;
 #else
-typedef cuda::atomic<uint> d_atomic_uint; // default, which is system too
+typedef cuda::atomic<uint> d_atomic_uint_x; // default, which is system too
 #endif
+
+#ifdef SCOPE_DEVICE_Y
+typedef cuda::atomic<uint, cuda::thread_scope_device> d_atomic_uint_y;
+#elif defined(SCOPE_BLOCK_Y)
+typedef cuda::atomic<uint, cuda::thread_scope_block> d_atomic_uint_y;
+#elif defined(SCOPE_SYSTEM_Y)
+typedef cuda::atomic<uint, cuda::thread_scope_system> d_atomic_uint_y;
+#elif defined(SCOPE_CTA_Y)
+typedef cuda::atomic<uint, cuda::thread_scope_thread> d_atomic_uint_y;
+#else
+typedef cuda::atomic<uint> d_atomic_uint_y; // default, which is system too
+#endif
+
+#ifdef RLX_RLX
+#define GPU_PRODUCER_ST_X cuda::memory_order_relaxed
+#define GPU_CONSUMER_LD_X cuda::memory_order_relaxed
+#define GPU_PRODUCER_ST_Y cuda::memory_order_relaxed
+#define GPU_CONSUMER_LD_Y cuda::memory_order_relaxed
+#elif defined(REL_ACQ)
+#define GPU_PRODUCER_ST_X cuda::memory_order_relaxed
+#define GPU_CONSUMER_LD_X cuda::memory_order_relaxed
+#define GPU_PRODUCER_ST_Y cuda::memory_order_release
+#define GPU_CONSUMER_LD_Y cuda::memory_order_acquire
+#elif defined(RLX_ACQ)
+#define GPU_PRODUCER_ST_X cuda::memory_order_relaxed
+#define GPU_CONSUMER_LD_X cuda::memory_order_relaxed
+#define GPU_PRODUCER_ST_Y cuda::memory_order_relaxed
+#define GPU_CONSUMER_LD_Y cuda::memory_order_acquire
+#elif defined(REL_RLX)
+#define GPU_PRODUCER_ST_X cuda::memory_order_relaxed
+#define GPU_CONSUMER_LD_X cuda::memory_order_relaxed
+#define GPU_PRODUCER_ST_Y cuda::memory_order_release
+#define GPU_CONSUMER_LD_Y cuda::memory_order_relaxed
+#endif
+
 
 #ifdef FENCE_SCOPE_BLOCK
 #define FENCE_SCOPE cuda::thread_scope_block
@@ -408,7 +443,8 @@ typedef struct {
 } KernelParams;
 
 __global__ void litmus_test(
-  d_atomic_uint* test_locations,
+  d_atomic_uint_x* test_locations_x,
+  d_atomic_uint_y* test_locations_y,
   ReadResults* read_results,
   uint* shuffled_workgroups,
   cuda::atomic<uint, cuda::thread_scope_device>* barrier,
@@ -418,7 +454,8 @@ __global__ void litmus_test(
   TestInstance* test_instances);
 
 __global__ void check_results(
-  d_atomic_uint* test_locations,
+  d_atomic_uint_x* test_locations_x,
+  d_atomic_uint_y* test_locations_y,
   ReadResults* read_results,
   TestResults* test_results,
   KernelParams* kernel_params,
