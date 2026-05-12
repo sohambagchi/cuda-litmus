@@ -189,8 +189,10 @@ void run(StressParams stressParams, TestParams testParams, bool print_results) {
   int testingThreads = stressParams.workgroupSize * stressParams.testingWorkgroups;
 
   int testLocSize = testingThreads * testParams.numMemLocations * stressParams.memStride * sizeof(uint);
-  d_atomic_uint* testLocations;
-  cudaMalloc(&testLocations, testLocSize);
+  d_atomic_uint_x* testLocations_x;
+  d_atomic_uint_y* testLocations_y;
+  cudaMalloc(&testLocations_x, testLocSize);
+  cudaMalloc(&testLocations_y, testLocSize);
 
   int readResultsSize = sizeof(ReadResults) * testingThreads;
   ReadResults* readResults;
@@ -243,7 +245,8 @@ void run(StressParams stressParams, TestParams testParams, bool print_results) {
     int numWorkgroups = setBetween(stressParams.testingWorkgroups, stressParams.maxWorkgroups);
 
     // clear memory
-    cudaMemset(testLocations, 0, testLocSize);
+    cudaMemset(testLocations_x, 0, testLocSize);
+    cudaMemset(testLocations_y, 0, testLocSize);
     cudaMemset(d_testResults, 0, sizeof(TestResults));
     cudaMemset(readResults, 0, readResultsSize);
     cudaMemset(barrier, 0, barrierSize);
@@ -258,9 +261,9 @@ void run(StressParams stressParams, TestParams testParams, bool print_results) {
     setDynamicKernelParams(h_kernelParams, stressParams);
     cudaMemcpy(d_kernelParams, h_kernelParams, sizeof(KernelParams), cudaMemcpyHostToDevice);
 
-    litmus_test << <numWorkgroups, stressParams.workgroupSize >> > (testLocations, readResults, d_shuffledWorkgroups, barrier, scratchpad, d_scratchLocations, d_kernelParams, d_testInstances);
+    litmus_test << <numWorkgroups, stressParams.workgroupSize >> > (testLocations_x, testLocations_y, readResults, d_shuffledWorkgroups, barrier, scratchpad, d_scratchLocations, d_kernelParams, d_testInstances);
 
-    check_results << <stressParams.testingWorkgroups, stressParams.workgroupSize >> > (testLocations, readResults, d_testResults, d_kernelParams, d_weak);
+    check_results << <stressParams.testingWorkgroups, stressParams.workgroupSize >> > (testLocations_x, testLocations_y, readResults, d_testResults, d_kernelParams, d_weak);
 
     cudaMemcpy(h_testResults, d_testResults, sizeof(TestResults), cudaMemcpyDeviceToHost);
     cudaMemcpy(h_testInstances, d_testInstances, testInstancesSize, cudaMemcpyDeviceToHost);
@@ -296,7 +299,8 @@ void run(StressParams stressParams, TestParams testParams, bool print_results) {
   std::cout << "Number of weak behaviors: " << weakBehaviors << "\n";
 
   // Free memory
-  cudaFree(testLocations);
+  cudaFree(testLocations_x);
+  cudaFree(testLocations_y);
   cudaFree(readResults);
   cudaFree(d_testResults);
   free(h_testResults);
